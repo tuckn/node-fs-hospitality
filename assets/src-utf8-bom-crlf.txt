@@ -1,0 +1,6 @@
+﻿file: Mock file to test
+description: UTF-8[BOM, dos]
+author: Tuckn <tuckn333+github@gmail.com>
+license: MIT
+see: https://github.com/tuckn/npm-util|GitHub
+テスト用2バイト文字

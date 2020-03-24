@@ -1,0 +1,64 @@
+{
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc"]
+  },
+  "source": {
+    "include": ["./dist/", "./README.md"],
+    "includePattern": ".js$",
+    "excludePattern": "(./node_modules/|./test/)"
+  },
+  "plugins": ["plugins/markdown"],
+  "opts": {
+    "destination": "./docs/",
+    "encoding": "utf8",
+    "recurse": true,
+    "verbose": true,
+    "template": "./node_modules/docdash"
+  },
+  "markdown": {
+    "parser": "gfm",
+    "hardwrap": true,
+    "idInHeadings": true
+  },
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false,
+    "default": {
+      "outputSourceFiles": true,
+      "includeDate": false,
+      "useLongnameInNav": true
+    }
+  },
+  "docdash": {
+    "static": true,
+    "sort": true,
+    "disqus": "",
+    "openGraph": {
+      "title": "npm-util",
+      "type": "website",
+      "image": "https://cloud.githubusercontent.com/assets/447956/13398144/4dde7f36-defd-11e5-8909-1a9013302cb9.png",
+      "site_name": "Github",
+      "url": "https://github.com/tuckn/npm-util"
+    },
+    "meta": {
+      "title": "npm-util",
+      "description": "Utility library",
+      "keyword": "modules, util, jsdoc, docdash"
+    },
+    "search": true,
+    "collapse": true,
+    "wrap": false,
+    "typedefs": true,
+    "removeQuotes": "none",
+    "scripts": ["./styles/docdash-tuckn.css"],
+    "menu": {
+      "Github repo": {
+        "href": "https://github.com/tuckn/npm-util",
+        "target": "_blank",
+        "class": "menu-item",
+        "id": "repository"
+      }
+    }
+  }
+}
