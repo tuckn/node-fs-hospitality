@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "christian-kohler.path-intellisense",
+    "coenraads.bracket-pair-colorizer",
     "dbaeumer.vscode-eslint",
     "eamodio.gitlens",
     "esbenp.prettier-vscode",
@@ -8,6 +9,7 @@
     "orta.vscode-jest",
     "pflannery.vscode-versionlens",
     "shardulm94.trailing-spaces",
-    "streetsidesoftware.code-spell-checker"
+    "streetsidesoftware.code-spell-checker",
+    "yzhang.markdown-all-in-one"
   ]
 }

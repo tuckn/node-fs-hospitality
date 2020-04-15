@@ -35,26 +35,25 @@
     "sort": true,
     "disqus": "",
     "openGraph": {
-      "title": "npm-util",
+      "title": "Node.js: fs-hospitality",
       "type": "website",
       "image": "https://cloud.githubusercontent.com/assets/447956/13398144/4dde7f36-defd-11e5-8909-1a9013302cb9.png",
-      "site_name": "Github",
-      "url": "https://github.com/tuckn/npm-util"
+      "site_name": "@tuckn/fs-hospitality",
+      "url": "https://docs.tuckn.net/node-fs-hospitality"
     },
     "meta": {
-      "title": "npm-util",
-      "description": "Utility library",
-      "keyword": "modules, util, jsdoc, docdash"
+      "title": "node-fs-hospitality",
+      "description": "Extra methods for fs object. e.g. readTextFile read a file with detecting automatically a character encoding. ",
+      "keyword": "fs, file, file system, read, write, text, character"
     },
     "search": true,
-    "collapse": true,
+    "collapse": false,
     "wrap": false,
     "typedefs": true,
     "removeQuotes": "none",
-    "scripts": ["./styles/docdash-tuckn.css"],
     "menu": {
       "Github repo": {
-        "href": "https://github.com/tuckn/npm-util",
+        "href": "https://github.com/tuckn/node-fs-hospitality",
         "target": "_blank",
         "class": "menu-item",
         "id": "repository"

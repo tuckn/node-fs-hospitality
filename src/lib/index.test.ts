@@ -12,11 +12,12 @@ const textUtf16LeBomDos = path.join(dirSamples, 'src-utf16le-bom-crlf.txt');
 const textUtf16LeUnix = path.join(dirSamples, 'src-utf16le-lf.txt');
 const textUtf8BomDos = path.join(dirSamples, 'src-utf8-bom-crlf.txt');
 const textUtf8Unix = path.join(dirSamples, 'src-utf8-lf.txt');
+const textUtf8None = path.join(dirSamples, 'src-utf8-none.txt');
+
 const TEST_WORDS_TOP = 'file: Mock file to test';
 const TEST_WORDS_STR = 'テスト用2バイト文字';
 
 describe('fs-hospitality', () => {
-  // textDataToBuf {{{
   test('textDataToBuf', () => {
     const passVals = [
       fileNonText,
@@ -25,12 +26,16 @@ describe('fs-hospitality', () => {
       fs.readFileSync(textUtf8BomDos),
     ];
 
-    passVals.forEach(textData => {
+    passVals.forEach((textData) => {
       expect(Buffer.isBuffer(fsh.textDataToBuf(textData))).toBeTruthy();
     });
-  }); // }}}
 
-  // detectTextEncoding {{{
+    // Test throwing Errors
+    [''].forEach((errVal) => {
+      expect(() => fsh.textDataToBuf(errVal)).toThrow();
+    });
+  });
+
   test('detectTextEncoding', () => {
     const answers = [
       { file: fileNonText, encoding: 'UTF32' },
@@ -42,27 +47,33 @@ describe('fs-hospitality', () => {
       { file: textUtf8Unix, encoding: 'UTF-8' },
     ];
 
-    answers.forEach(o => {
+    answers.forEach((o) => {
       // file-path
       expect(fsh.detectTextEncoding(o.file)).toBe(o.encoding);
       // Buffer
       const data = fs.readFileSync(o.file);
       expect(fsh.detectTextEncoding(data)).toBe(o.encoding);
     });
-  }); // }}}
 
-  // detectTextEol {{{
+    // Test throwing Errors
+    [''].forEach((errVal) => {
+      expect(() => fsh.detectTextEncoding(errVal)).toThrow();
+    });
+  });
+
   test('detectTextEol', () => {
     const answers = [
+      { file: fileNonText, eol: 'lf' }, // Can not be identified
       { file: textSjisDos, eol: 'crlf' },
       { file: textUtf16BeBomDos, eol: 'crlf' },
       { file: textUtf16LeBomDos, eol: 'crlf' },
       { file: textUtf16LeUnix, eol: 'lf' },
       { file: textUtf8BomDos, eol: 'crlf' },
       { file: textUtf8Unix, eol: 'lf' },
+      { file: textUtf8None, eol: '' },
     ];
 
-    answers.forEach(o => {
+    answers.forEach((o) => {
       // file-path
       expect(fsh.detectTextEol(o.file)).toBe(o.eol);
       // Buffer
@@ -77,10 +88,14 @@ describe('fs-hospitality', () => {
     // Buffer
     const data = fs.readFileSync(fileNonText);
     expect(fsh.detectTextEol(data)).toEqual(anyEol);
-  }); // }}}
 
-  // readTextFile {{{
-  test('readTextFile', async done => {
+    // Test throwing Errors
+    [''].forEach((errVal) => {
+      expect(() => fsh.detectTextEol(errVal)).toThrow();
+    });
+  });
+
+  test('readTextFile', async (done) => {
     const examples = [
       textSjisDos,
       textUtf16BeBomDos,
@@ -92,22 +107,24 @@ describe('fs-hospitality', () => {
     const expectedTopStr = expect.stringContaining(TEST_WORDS_TOP);
     const expectedWordStr = expect.stringContaining(TEST_WORDS_STR);
 
-    await Promise.all(
-      examples.map(
-        file =>
-          new Promise(resolve => {
-            fsh.readTextFile(file).then(textData => {
-              resolve(expect(textData).toStrictEqual(expectedTopStr));
-              resolve(expect(textData).toStrictEqual(expectedWordStr));
-            });
-          }),
-      ),
-    );
+    examples.forEach(async (file) => {
+      // from a file-path
+      let textData = await fsh.readTextFile(file);
+      expect(textData).toStrictEqual(expectedTopStr);
+      expect(textData).toStrictEqual(expectedWordStr);
+      // from a Buffer
+      const bufData = fs.readFileSync(file);
+      textData = await fsh.readTextFile(bufData);
+      expect(textData).toStrictEqual(expectedTopStr);
+      expect(textData).toStrictEqual(expectedWordStr);
+    });
+
+    // Test throwing Errors
+    await expect(fsh.readTextFile('')).rejects.toThrow();
 
     done();
-  }); // }}}
+  });
 
-  // readTextFileSync {{{
   test('readTextFileSync', () => {
     const examples = [
       textSjisDos,
@@ -120,14 +137,22 @@ describe('fs-hospitality', () => {
     const expectedTopStr = expect.stringContaining(TEST_WORDS_TOP);
     const expectedWordStr = expect.stringContaining(TEST_WORDS_STR);
 
-    examples.forEach(file => {
-      const textData = fsh.readTextFileSync(file);
+    examples.forEach((file) => {
+      // from a file-path
+      let textData = fsh.readTextFileSync(file);
+      expect(textData).toStrictEqual(expectedTopStr);
+      expect(textData).toStrictEqual(expectedWordStr);
+      // from a Buffer
+      const bufData = fs.readFileSync(file);
+      textData = fsh.readTextFileSync(bufData);
       expect(textData).toStrictEqual(expectedTopStr);
       expect(textData).toStrictEqual(expectedWordStr);
     });
-  }); // }}}
 
-  // trimAllLines {{{
+    // Test throwing Errors
+    expect(() => fsh.readTextFileSync('')).toThrow();
+  });
+
   test('trimAllLines', () => {
     const expecteds = [
       {
@@ -174,15 +199,14 @@ describe('fs-hospitality', () => {
       },
     ];
 
-    expecteds.forEach(o => {
+    expecteds.forEach((o) => {
       expect(fsh.trimAllLines(o.str)).toBe(o.all);
       expect(fsh.trimAllLines(o.str, 'all')).toBe(o.all);
       expect(fsh.trimAllLines(o.str, 'start')).toBe(o.start);
       expect(fsh.trimAllLines(o.str, 'end')).toBe(o.end);
     });
-  }); // }}}
+  });
 
-  // convertEOL {{{
   test('convertEOL', () => {
     const expecteds = [
       {
@@ -215,7 +239,7 @@ describe('fs-hospitality', () => {
       },
     ];
 
-    expecteds.forEach(o => {
+    expecteds.forEach((o) => {
       expect(fsh.convertEOL(o.str)).toBe(o.empty);
       expect(fsh.convertEOL(o.str, '')).toBe(o.empty);
       expect(fsh.convertEOL(o.str, '\n')).toBe(o.lf);
@@ -229,9 +253,8 @@ describe('fs-hospitality', () => {
       expect(fsh.convertEOL(o.str, 'cr')).toBe(o.cr);
       expect(fsh.convertEOL(o.str, 'CR')).toBe(o.cr);
     });
-  }); // }}}
+  });
 
-  // makeTmpPath {{{
   test('makeTmpPath', () => {
     const { makeTmpPath } = fsh; // shorthand
     const dirTmp = os.tmpdir(); // caching
@@ -266,13 +289,12 @@ describe('fs-hospitality', () => {
       expect(tmpPath.indexOf('\\\\server\\public\\') === 0).toBeTruthy();
       expect(tmpPath).toEqual(expect.stringMatching(/[0-9a-z-]+/));
     }
-  }); // }}}
+  });
 
   const testTextLf =
     '{\n  "title": "test",  \n  "message": "テスト文字列"\n } ';
   const testTextCrLf = fsh.convertEOL(testTextLf, 'crlf');
   const expecteds = [
-    // {{{
     {
       name: 'no-options_lf',
       opt: undefined,
@@ -335,9 +357,8 @@ describe('fs-hospitality', () => {
       encoding: 'SJIS',
     },
     /** @todo Add test pattern */
-  ]; // }}}
+  ];
 
-  // writeTmpFileSync {{{
   test('writeTmpFileSync', () => {
     // String Data
     const tmpPath = fsh.writeTmpFileSync(testTextLf);
@@ -350,47 +371,41 @@ describe('fs-hospitality', () => {
     fs.unlinkSync(tmpPath); // Clean
 
     /** @todo Binary Data */
-  }); // }}}
+  });
 
-  // writeTextFile {{{
-  test('writeTextFile', async done => {
-    await Promise.all(
-      expecteds.map(
-        o =>
-          new Promise(resolve => {
-            const tmpPath = fsh.makeTmpPath('', 'test_', '.txt');
+  test('writeTextFile', async (done) => {
+    expecteds.forEach(async (o) => {
+      const tmpPath = fsh.makeTmpPath('', 'test_', '.txt');
+      await fsh.writeTextFile(tmpPath, o.inputText, o.opt);
 
-            fsh.writeTextFile(tmpPath, o.inputText, o.opt).then(() => {
-              const readData = fs.readFileSync(tmpPath);
-
-              expect(fsh.detectTextEncoding(readData)).toBe(o.encoding);
-              expect(fsh.detectTextEol(readData)).toBe(o.eol);
-              /** @todo Test BOM */
-              expect(fsh.readTextFileSync(readData)).toBe(o.outputText);
-
-              resolve(fs.unlinkSync(tmpPath)); // Clean
-            });
-          }),
-      ),
-    );
-
-    done();
-  }); // }}}
-
-  // writeTextFileSync {{{
-  test('writeTextFileSync', () => {
-    expecteds.forEach(o => {
-      const tmpPath = fsh.makeTmpPath('', `test_${o.name}`, '.txt');
-
-      fsh.writeTextFileSync(tmpPath, o.inputText, o.opt);
       const readData = fs.readFileSync(tmpPath);
-
       expect(fsh.detectTextEncoding(readData)).toBe(o.encoding);
       expect(fsh.detectTextEol(readData)).toBe(o.eol);
-      /** @todo Test BOM */
       expect(fsh.readTextFileSync(readData)).toBe(o.outputText);
-
-      fs.unlinkSync(tmpPath); // Clean
+      // Clean
+      fs.unlinkSync(tmpPath);
     });
-  }); // }}}
+
+    // Test throwing Errors
+    await expect(fsh.writeTextFile('')).rejects.toThrow();
+
+    done();
+  });
+
+  test('writeTextFileSync', () => {
+    expecteds.forEach((o) => {
+      const tmpPath = fsh.makeTmpPath('', `test_${o.name}`, '.txt');
+      fsh.writeTextFileSync(tmpPath, o.inputText, o.opt);
+
+      const readData = fs.readFileSync(tmpPath);
+      expect(fsh.detectTextEncoding(readData)).toBe(o.encoding);
+      expect(fsh.detectTextEol(readData)).toBe(o.eol);
+      expect(fsh.readTextFileSync(readData)).toBe(o.outputText);
+      // Clean
+      fs.unlinkSync(tmpPath);
+    });
+
+    // Test throwing Errors
+    expect(() => fsh.writeTextFileSync('')).toThrow();
+  });
 });
