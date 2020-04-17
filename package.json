@@ -46,11 +46,11 @@
     "docs:common": "jsdoc --configure ./jsdoc.json",
     "postdocs": "cpx ./scripts/jsdoc.css ./docs/styles/",
     "docs": "run-s docs:*",
-    "prepublish": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "npx lint-staged"
     }
   },
   "lint-staged": {

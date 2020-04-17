@@ -127,7 +127,7 @@ export function detectTextEol(textData: Buffer | string): string {
  
   readTextFile(fileSjis).then((textString) => {
     console.log(textString);
-    // Returns text strings parsed with Shift_JIS
+    // Returns strings parsed with Shift_JIS
   });
  
   // Ex.2 From a Buffer
@@ -136,7 +136,7 @@ export function detectTextEol(textData: Buffer | string): string {
   fs.readFile(fileUtf16LE, async (err, data) => {
     var textString = await readTextFile(data);
     console.log(textString);
-    // Returns text strings parsed with UTF-16LE
+    // Returns strings parsed with UTF-16LE
   });
  */
 export function readTextFile(
@@ -192,12 +192,12 @@ export function readTextFile(
  
   // Ex.1 From the file-path
   var textString = readTextFileSync('D:\\Test\\MyNoteSJIS.txt');
-  // Returns the text strings parsed with Shift_JIS
+  // Returns the strings parsed with Shift_JIS
  
   // Ex.2 From the Buffer
   var buf = fs.readFile('D:\\Test\\Utf16LE.log');
   var textString = readTextFileSync(buf);
-  // Returns the text strings parsed with UTF-16LE
+  // Returns the strings parsed with UTF-16LE
  */
 export function readTextFileSync(
   textFile: string | Buffer,
@@ -266,13 +266,13 @@ export function convertEOL(strData: string, eol = ''): string {
  * @param {string} [postfix]
  * @returns {string} - A temporary path
  * @example
-  var fs = require('fs');
   var { makeTmpPath } = require('@tuckn/fs-hospitality');
  
   var tmpPath1 = makeTmpPath();
   // Returns: 'C:\Users\YourName\AppData\Local\Temp\7c70ceef-28f6-4ae8-b4ef-5e5d459ef007'
  
-  // If necessary, make sure that file does not exist.
+  // If necessary, make sure that the file does not exist.
+  var fs = require('fs');
   if (fs.existsSync(tmpPath1)) throw new Error('Oops!');
  
   var tmpPath2 = makeTmpPath('.');
@@ -299,13 +299,13 @@ export function makeTmpPath(baseDir = '', prefix = '', postfix = ''): string {
  * @param {object} [options] - See {@link https://nodejs.org/api/fs.html#fs_fs_writefilesync_file_data_options|Node.js fs.writeFileSync}
  * @returns {string} - A temporary file path
  * @example
-  var fs = require('fs');
   var { writeTmpFileSync } = require('@tuckn/fs-hospitality');
  
-  var tmpStr = 'Temporary Message';
+  var tmpStr = 'The Temporary Message';
   var tmpPath = writeTmpFileSync(tmpStr);
   // Returns: 'C:\Users\YourName\AppData\Local\Temp\7c70ceef-28f6-4ae8-b4ef-5e5d459ef007'
  
+  var fs = require('fs');
   var readData = fs.readFileSync(tmpPath, { encoding: 'utf8' });
   console.log(tmpStr === readData); // true
  */

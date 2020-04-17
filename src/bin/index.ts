@@ -23,9 +23,9 @@ import * as fsh from '../lib/index';
  * @returns {string}
  * @example
 // Ex. on Windows
-> npx fs-hospitality detect-text-spec "D:\\Test\\src.wsf" --type "encoding"
+> npx fs-hospitality detect-text-spec "D:\Test\src.wsf" --type "encoding"
 SJIS
-> npx fs-hospitality detect-text-spec "D:\\Test\\src.wsf" --type "eol"
+> npx fs-hospitality detect-text-spec "D:\Test\src.wsf" --type "eol"
 crlf
  */
 program
@@ -60,7 +60,7 @@ program
  * @returns {string}
  * @example
 // Ex. on Windows
-> npx fs-hospitality conv-text "D:\\Test\\src.wsf" --trim "all" --eol "dos" --bom
+> npx fs-hospitality conv-text "D:\Test\src.wsf" --trim "all" --eol "dos" --bom
  */
 program
   .command('conv-text <filepath> [destPath]')
