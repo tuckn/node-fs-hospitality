@@ -17,7 +17,7 @@ import * as fsh from '../lib/index';
 /**
  * @function detect-text-spec
  * @memberof CLI
- * @param {string} filepath - A file-path
+ * @param {string} filePath - A file-path
  * @param {object} [options]
  * @param {string} [options.type] - "-T" or "--type" and "all", "encoding", "eol"
  * @returns {string}
@@ -29,7 +29,7 @@ SJIS
 crlf
  */
 program
-  .command('detect-text-spec <filepath>')
+  .command('detect-text-spec <filePath>')
   .version('1.0.0')
   .description('Detecting a text specification.')
   .option('-T, --type <name>', '"all" | "encoding" | "eol"')
@@ -51,8 +51,8 @@ program
 /**
  * @function conv-text
  * @memberof CLI
- * @param {string} filepath - A source file-path
- * @param {string} [destpath] - A destination file-path
+ * @param {string} filePath - A source file-path
+ * @param {string} [destPath] - A destination file-path
  * @param {object} [options]
  * @param {string} [options.trim] - "all" | "start" | "end"
  * @param {string} [options.eol] - "lf" | "cr" | "crlf" or "unix" | "mac" | "dos"
@@ -63,7 +63,7 @@ program
 > npx fs-hospitality conv-text "D:\Test\src.wsf" --trim "all" --eol "dos" --bom
  */
 program
-  .command('conv-text <filepath> [destPath]')
+  .command('conv-text <filePath> [destPath]')
   .version('1.0.0')
   .description('Converting a text encoding.')
   .option('-T, --trim <type>', '"all" | "start" | "end"')
@@ -79,12 +79,12 @@ program
     const eol = obtain(options, 'eol', null);
     const bom = obtain(options, 'bom', null);
     const encoding = obtain(options, 'encoding', null);
-    const textData = fsh.readTextFileSync(filePath);
+    const textData = fsh.readAsTextSync(filePath);
 
     let dest = destPath;
     if (!dest) dest = filePath;
 
-    fsh.writeTextFileSync(dest, textData, {
+    fsh.writeAsTextSync(dest, textData, {
       trim,
       eol,
       bom,

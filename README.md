@@ -1,6 +1,6 @@
 # Node.js: fs-hospitality
 
-Extra methods for Node.js File System. e.g. `readTextFile` read a file with detecting automatically a character encoding.
+Extra methods for Node.js File System. e.g. `readAsText` read a file with detecting automatically a character encoding.
 
 ## Motivation
 
@@ -17,43 +17,43 @@ npm install @tuckn/fs-hospitality
 
 ### Read Text File
 
-`readTextFile` and `readTextFileSync` can automatically recognize the encoding of a text file and read the contents as an enabled string.
+`readAsText` and `readAsTextSync` can automatically recognize the encoding of a text file and read the contents as an enabled string.
 
 Asynchronous
 
 ```js
-const { readTextFile } = require('@tuckn/fs-hospitality');
+const fsh = require('@tuckn/fs-hospitality');
 
-readTextFile(fileSjis).then(('D:\\Test\\MyNoteSJIS.txt') => {
+fsh.readAsText('D:\\Test\\MyNoteSJIS.txt').then((textString) => {
   console.log(textString);
-  // Returns strings parsed with Shift_JIS
+  // Returns String parsed with Shift_JIS
 });
 ```
 
 Synchronous
 
 ```js
-const { readTextFileSync } = require('@tuckn/fs-hospitality');
+const fsh = require('@tuckn/fs-hospitality');
 
-const textString = readTextFileSync('D:\\Test\\Utf16LE.txt');
-// Returns the strings parsed with UTF-16LE
+const textString = fsh.readAsTextSync('D:\\Test\\NoteUtf16LE.txt');
+// Returns String parsed with UTF-16LE
 ```
 
 ### Write Text File
 
-`writeTextFile` and `writeTextFileSync` can write strings a file with specifying the valid options for text file.
+`writeAsText` and `writeAsTextSync` can write strings a file with specifying the valid options for text file.
 
 Asynchronous
 
 ```js
-const { writeTextFile } = require('@tuckn/fs-hospitality');
+const fsh = require('@tuckn/fs-hospitality');
 
 const vbsCode =
   '  Dim str As String \n' + '  str = "テスト"  \n' + ' WScript.Echo str\n';
 
 const options = { trim: 'all', eol: 'crlf', encoding: 'SJIS' };
 
-writeTextFile('D:\\Test\\sjis.vbs', vbsCode, options).then(() => {
+fsh.writeAsText('D:\\Test\\sjis.vbs', vbsCode, options).then(() => {
   console.log('Writing successful');
 });
 ```
@@ -61,7 +61,7 @@ writeTextFile('D:\\Test\\sjis.vbs', vbsCode, options).then(() => {
 Synchronous
 
 ```js
-const { writeTextFileSync } = require('@tuckn/fs-hospitality');
+const fsh = require('@tuckn/fs-hospitality');
 
 const vbsCode =
   '<package><job>\n' +
@@ -70,7 +70,7 @@ const vbsCode =
 
 const options = { eol: 'crlf', bom: true, encoding: 'UTF-8' };
 
-writeTextFileSync('D:\\Test\\utf8bom.wsf', vbsCode, {}).then(() => {
+fsh.writeAsTextSync('D:\\Test\\utf8bom.wsf', vbsCode, {}).then(() => {
   console.log('Writing successful');
 });
 ```
@@ -80,9 +80,9 @@ writeTextFileSync('D:\\Test\\utf8bom.wsf', vbsCode, {}).then(() => {
 Make a temporary path.
 
 ```js
-const { makeTmpPath } = require('@tuckn/fs-hospitality');
+const fsh = require('@tuckn/fs-hospitality');
 
-const tmpPath1 = makeTmpPath();
+const tmpPath1 = fsh.makeTmpPath();
 // Returns: 'C:\Users\YourName\AppData\Local\Temp\7c70ceef-28f6-4ae8-b4ef-5e5d459ef007'
 
 // If necessary, make sure that the file does not exist.
@@ -93,10 +93,10 @@ if (fs.existsSync(tmpPath1)) throw new Error('Oops! Already existing');
 Write a temporary file and get the path.
 
 ```js
-const { writeTmpFileSync } = require('@tuckn/fs-hospitality');
+const fsh = require('@tuckn/fs-hospitality');
 
 const tmpStr = 'The Temporary Message';
-const tmpPath = writeTmpFileSync(tmpStr);
+const tmpPath = fsh.writeTmpFileSync(tmpStr);
 // Returns: 'C:\Users\YourName\AppData\Local\Temp\7c70ceef-28f6-4ae8-b4ef-5e5d459ef007'
 
 const fs = require('fs');

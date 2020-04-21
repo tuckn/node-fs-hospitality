@@ -1,10 +1,10 @@
-import chardet from 'chardet';
-import encodingJp from 'encoding-japanese';
-import fs from 'fs';
-import iconv from 'iconv-lite';
+import * as chardet from 'chardet';
+import * as encodingJp from 'encoding-japanese';
+import * as fs from 'fs';
+import * as iconv from 'iconv-lite';
 import { get as obtain, isString } from 'lodash';
-import os from 'os';
-import path from 'path';
+import * as os from 'os';
+import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
 /** @namespace API */
@@ -23,15 +23,15 @@ const _errLoc = (fn: Function) => `\n    at ${fn.name} (${__filename})`;
  * Reads the entire contents of a file. If a type of the param is Buffer, direct return it.
  *
  * @memberof API
- * @param {(Buffer|string)} textData - Buffer of file-path
+ * @param {(Buffer|string)} textData - A Buffer or a file-path
  * @returns {Buffer} - The entire contents
  * @example
-  var { textDataToBuf } = require('@tuckn/fs-hospitality');
+  const { textDataToBuf } = require('@tuckn/fs-hospitality');
  
-  var buf = textDataToBuf('D:\\Test\\SjisNote.txt'); // file-path
+  const buf = textDataToBuf('D:\\Test\\SjisNote.txt'); // file-path
   // Returns: fs.readFileSync('D:\\Test\\SjisNote.txt')
  
-  var buf2 = textDataToBuf(buf); // Buffer
+  const buf2 = textDataToBuf(buf); // Buffer
   // Returns: buf
  */
 export function textDataToBuf(textData: Buffer | string): Buffer {
@@ -50,18 +50,18 @@ export function textDataToBuf(textData: Buffer | string): Buffer {
  * Detects the character encoding of a Buffer or a file-path. A binary file would be detected as UTF32. See {@link https://github.com/runk/node-chardet#supported-encodings|chardet Supported Encodings}. If chardet detect windows-1252, Re-detect with {@link https://github.com/polygonplanet/encoding.js#available-encodings|encoding.js}.
  *
  * @memberof API
- * @param {(Buffer|string)} textData - Buffer of file-path
+ * @param {(Buffer|string)} textData - A Buffer or a file-path
  * @returns {string} - A name of character encoding. A binary file would be detected as UTF32.
  * @example
-  var { detectTextEncoding } = require('@tuckn/fs-hospitality');
+  const { detectTextEncoding } = require('@tuckn/fs-hospitality');
  
-  var encoding = detectTextEncoding('D:\\Test\\SjisNote.txt');
+  const encoding = detectTextEncoding('D:\\Test\\SjisNote.txt');
   // Returns: 'SJIS'
  
-  var encoding = detectTextEncoding('D:\\Test\\Utf16LeNote.doc');
+  const encoding2 = detectTextEncoding('D:\\Test\\Utf16LeNote.doc');
   // Returns: 'UTF-16LE'
  
-  var encoding = detectTextEncoding('D:\\Test\\image.png');
+  const encoding3 = detectTextEncoding('D:\\Test\\image.png');
   // Returns: 'UTF32'
  */
 export function detectTextEncoding(textData: Buffer | string): string {
@@ -85,13 +85,13 @@ export function detectTextEncoding(textData: Buffer | string): string {
  * @param {(Buffer|string)} textData - Buffer of file-path
  * @returns {string} - "crlf" | "cr" | "lf" | ""
  * @example
-  var { detectTextEol } = require('@tuckn/fs-hospitality');
+  const { detectTextEol } = require('@tuckn/fs-hospitality');
  
-  var eol = detectTextEol('D:\\Test\\SjisCRLF.txt'); // file-path
+  const eol = detectTextEol('D:\\Test\\SjisCRLF.txt'); // file-path
   // Returns: 'crlf'
  
-  var buf = 'D:\\Test\\Utf8.doc'
-  var eol = detectTextEol(buf); // Buffer
+  const buf = 'D:\\Test\\Utf8.doc'
+  const eol2 = detectTextEol(buf); // Buffer
   // Returns: 'lf'
  */
 export function detectTextEol(textData: Buffer | string): string {
@@ -113,33 +113,33 @@ export function detectTextEol(textData: Buffer | string): string {
 }
 
 /**
- * Reads a Buffer or a file-path as text file and encodes it into a String.
+ * Reads a Buffer or a file-path as text and encodes it into a String.
  *
  * @memberof API
  * @param {(Buffer|string)} textFile - Buffer or file-path
  * @param {string} [encoding=''] - If empty, auto-detecting
  * @returns {Promise<string>} - { resolve:string, reject:Error }
  * @example
-  var { readTextFile } = require('@tuckn/fs-hospitality');
+  const { readAsText } = require('@tuckn/fs-hospitality');
  
   // Ex.1 From a file-path
-  var fileSjis = 'D:\\Test\\MyNoteSJIS.txt'
+  const fileSjis = 'D:\\Test\\MyNoteSJIS.txt'
  
-  readTextFile(fileSjis).then((textString) => {
+  readAsText(fileSjis).then((textString) => {
     console.log(textString);
-    // Returns strings parsed with Shift_JIS
+    // Returns String parsed with Shift_JIS
   });
  
   // Ex.2 From a Buffer
-  var fileUtf16LE = 'D:\\Test\\Utf16LE.log'
+  const fileUtf16LE = 'D:\\Test\\Utf16LE.log'
  
   fs.readFile(fileUtf16LE, async (err, data) => {
-    var textString = await readTextFile(data);
+    const textString = await readAsText(data);
     console.log(textString);
-    // Returns strings parsed with UTF-16LE
+    // Returns String parsed with UTF-16LE
   });
  */
-export function readTextFile(
+export function readAsText(
   textFile: Buffer | string,
   encoding = '',
 ): Promise<string> {
@@ -172,7 +172,8 @@ export function readTextFile(
         let enc = encoding;
         if (!encoding) enc = detectTextEncoding(data);
 
-        return resolve(iconv.decode(data, enc));
+        // if (encoding === 'binary') return resolve(data);
+        return resolve(iconv.decode(data, enc)); // @todo When enc is 'binary'
       } catch (e) {
         return reject(e);
       }
@@ -181,25 +182,25 @@ export function readTextFile(
 }
 
 /**
- * The asynchronous version of this API: readTextFile().
+ * The asynchronous version of this API: readAsText().
  *
  * @memberof API
- * @param {(Buffer|string)} textFile - Buffer or file-path
+ * @param {(Buffer|string)} textFile - A Buffer or a file-path
  * @param {string} [encoding=''] - If empty, auto-detecting
  * @returns {string} - The entire contents as String
  * @example
-  var { readTextFileSync } = require('@tuckn/fs-hospitality');
+  const { readAsTextSync } = require('@tuckn/fs-hospitality');
  
   // Ex.1 From the file-path
-  var textString = readTextFileSync('D:\\Test\\MyNoteSJIS.txt');
-  // Returns the strings parsed with Shift_JIS
+  const textString = readAsTextSync('D:\\Test\\MyNoteSJIS.txt');
+  // Returns String parsed with Shift_JIS
  
   // Ex.2 From the Buffer
-  var buf = fs.readFile('D:\\Test\\Utf16LE.log');
-  var textString = readTextFileSync(buf);
-  // Returns the strings parsed with UTF-16LE
+  const buf = fs.readFile('D:\\Test\\Utf16LE.log');
+  const textString2 = readAsTextSync(buf);
+  // Returns String parsed with UTF-16LE
  */
-export function readTextFileSync(
+export function readAsTextSync(
   textFile: string | Buffer,
   encoding = '',
 ): string {
@@ -222,7 +223,8 @@ export function readTextFileSync(
   let enc = encoding;
   if (!encoding) enc = detectTextEncoding(data);
 
-  return iconv.decode(data, enc);
+  // if (encoding === 'binary') return data;
+  return iconv.decode(data, enc); // @todo When enc is 'binary'
 }
 
 /**
@@ -233,14 +235,14 @@ export function readTextFileSync(
  * @param {string} eol - "(lf|unix|\n)" | "(cr|mac|\r)" | "(crlf|dos|\r\n)"
  * @returns {string} - A replaced string
  * @example
-  var { convertEOL } = require('@tuckn/fs-hospitality');
+  const { convertEOL } = require('@tuckn/fs-hospitality');
  
-  var textCrLf = 'foo\r\n'
+  const textCrLf = 'foo\r\n'
     + 'bar\r\n'
     + '\r\n'
     + 'baz';
  
-  var textLf = convertEOL(textCrLf, 'lf');
+  const textLf = convertEOL(textCrLf, 'lf');
   // Returns:
   // 'foo\n'
   //   + 'bar\n
@@ -261,27 +263,27 @@ export function convertEOL(strData: string, eol = ''): string {
  * Create a temporary path on the {@link https://nodejs.org/api/os.html#os_os_tmpdir|Node.js os.tmpdir}
  *
  * @memberof API
- * @param {string} [baseDir] - The defalut is os.tmpdir
+ * @param {string} [baseDir] - The default is os.tmpdir
  * @param {string} [prefix]
  * @param {string} [postfix]
  * @returns {string} - A temporary path
  * @example
-  var { makeTmpPath } = require('@tuckn/fs-hospitality');
+  const { makeTmpPath } = require('@tuckn/fs-hospitality');
  
-  var tmpPath1 = makeTmpPath();
+  const tmpPath1 = makeTmpPath();
   // Returns: 'C:\Users\YourName\AppData\Local\Temp\7c70ceef-28f6-4ae8-b4ef-5e5d459ef007'
  
   // If necessary, make sure that the file does not exist.
-  var fs = require('fs');
+  const fs = require('fs');
   if (fs.existsSync(tmpPath1)) throw new Error('Oops!');
  
-  var tmpPath2 = makeTmpPath('.');
+  const tmpPath2 = makeTmpPath('.');
   // Returns: 'D:\test\2a5d35c8-7214-4ec7-a41d-a371b19273e7'
  
-  var tmpPath3 = makeTmpPath('\\\\server\\public');
+  const tmpPath3 = makeTmpPath('\\\\server\\public');
   // Returns: '\\server\public\01fa6ce7-e6d3-4b50-bdcd-19679c49bef2'
  
-  var tmpPath4 = makeTmpPath('R:', 'tmp_', '.log');
+  const tmpPath4 = makeTmpPath('R:', 'tmp_', '.log');
   // Returns: 'R:\tmp_14493643-792d-4b0d-b2af-c74531db625e.log'
  */
 export function makeTmpPath(baseDir = '', prefix = '', postfix = ''): string {
@@ -299,14 +301,14 @@ export function makeTmpPath(baseDir = '', prefix = '', postfix = ''): string {
  * @param {object} [options] - See {@link https://nodejs.org/api/fs.html#fs_fs_writefilesync_file_data_options|Node.js fs.writeFileSync}
  * @returns {string} - A temporary file path
  * @example
-  var { writeTmpFileSync } = require('@tuckn/fs-hospitality');
+  const { writeTmpFileSync } = require('@tuckn/fs-hospitality');
  
-  var tmpStr = 'The Temporary Message';
-  var tmpPath = writeTmpFileSync(tmpStr);
+  const tmpStr = 'The Temporary Message';
+  const tmpPath = writeTmpFileSync(tmpStr);
   // Returns: 'C:\Users\YourName\AppData\Local\Temp\7c70ceef-28f6-4ae8-b4ef-5e5d459ef007'
  
-  var fs = require('fs');
-  var readData = fs.readFileSync(tmpPath, { encoding: 'utf8' });
+  const fs = require('fs');
+  const readData = fs.readFileSync(tmpPath, { encoding: 'utf8' });
   console.log(tmpStr === readData); // true
  */
 export function writeTmpFileSync(
@@ -331,22 +333,22 @@ function _trimAllLinesReplacer(matched: string): string {
  * Trims a string at every each line
  *
  * @memberof API
- * @param {string} strLines - A string to be trimed
+ * @param {string} strLines - A string to be trimmed
  * @param {string} [option='all'] - 'all' | 'start' | 'end';
- * @returns {string} - A trimed string
+ * @returns {string} - A trimmed string
  * @example
-  var { trimAllLines } = require('@tuckn/fs-hospitality');
+  const { trimAllLines } = require('@tuckn/fs-hospitality');
  
-  var str = '  foo  \n'
+  const str = '  foo  \n'
     + '  bar  \n'
     + ' baz  ';
  
-  var trimedStr = trimAllLines(str);
+  const trimmedStr1 = trimAllLines(str);
   // Returns: 'foo\n'
   //   + 'bar\n'
   //   + 'baz';
  
-  var trimedStr = trimAllLines(str, 'end');
+  const trimmedStr2 = trimAllLines(str, 'end');
   // Returns: '  foo\n'
   //   + '  bar\n'
   //   + ' baz';
@@ -365,14 +367,14 @@ export function trimAllLines(strLines: string, option = 'all'): string {
 }
 
 /**
- * @typedef {object} PreWriteTextFileOptions
+ * @typedef {object} PrewriteAsTextOptions
  * @readonly
  * @property {TrimAllLinesOption} [trim]
  * @property {string} [eol] - See {@link convertEOL}
  * @property {boolean} [bom]
  * @property {string} [encoding] - See {@link https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings|iconv-lite Supported Encodings}
  */
-type PreWriteTextFileOptions = {
+type PrewriteAsTextOptions = {
   trim?: string;
   eol?: string;
   bom?: boolean;
@@ -382,12 +384,12 @@ type PreWriteTextFileOptions = {
 /**
  * @private
  * @param {string} [strData='']
- * @param {PreWriteTextFileOptions} [options]
- * @returns {string}
+ * @param {PrewriteAsTextOptions} [options]
+ * @returns {string} - A formatted text
  */
-function _preWriteTextFile(
+function _prewriteAsText(
   strData = '',
-  options: PreWriteTextFileOptions = {},
+  options: PrewriteAsTextOptions = {},
 ): string {
   let writtenData = strData;
 
@@ -408,14 +410,14 @@ function _preWriteTextFile(
  * @memberof API
  * @param {string} destPath - A destination file-path
  * @param {string} [strData=''] - A string of data to write
- * @param {PreWriteTextFileOptions} [options]
+ * @param {PrewriteAsTextOptions} [options]
  * @returns {Promise<void>} - { resolve:undefined, reject: Error }
  * @example
-  var { writeTextFile } = require('@tuckn/fs-hospitality');
-  var vbsFile = 'D:\\Test\\utf8bom.vbs';
-  var strData = 'Dim str As String  \n  str = "hoge"\n  WScript.Echo str';
+  const { writeAsText } = require('@tuckn/fs-hospitality');
+  const vbsFile = 'D:\\Test\\utf8bom.vbs';
+  const strData = 'Dim str As String  \n  str = "hoge"\n  WScript.Echo str';
  
-  writeTextFile(vbsFile, strData, {
+  writeAsText(vbsFile, strData, {
     trim: 'all',
     eol: 'crlf',
     bom: true,
@@ -424,10 +426,10 @@ function _preWriteTextFile(
     console.log('Writing successful');
   });
  */
-export function writeTextFile(
+export function writeAsText(
   destPath: string,
   strData = '',
-  options: PreWriteTextFileOptions = {},
+  options: PrewriteAsTextOptions = {},
 ): Promise<void> {
   if (!destPath) {
     return Promise.reject(
@@ -436,7 +438,7 @@ export function writeTextFile(
   }
 
   const filePath = path.resolve(destPath);
-  const writtenData = _preWriteTextFile(strData, options);
+  const writtenData = _prewriteAsText(strData, options);
 
   let addBOM = { addBOM: false };
   if (obtain(options, 'bom', false)) addBOM = { addBOM: true };
@@ -459,19 +461,19 @@ export function writeTextFile(
 }
 
 /**
- * The asynchronous version of this API: writeTextFile().
+ * The asynchronous version of this API: writeAsText().
  *
  * @memberof API
  * @param {string} destPath - A destination file-path
  * @param {string} [strData=''] - A string of data to write
- * @param {PreWriteTextFileOptions} [options]
+ * @param {PrewriteAsTextOptions} [options]
  * @returns {void}
  * @example
-  var { writeTextFile } = require('@tuckn/fs-hospitality');
-  var vbsFile = 'D:\\Test\\utf8bom.vbs';
-  var strData = 'Dim str As String  \n  str = "hoge"\n  WScript.Echo str';
+  const { writeAsText } = require('@tuckn/fs-hospitality');
+  const vbsFile = 'D:\\Test\\utf8bom.vbs';
+  const strData = 'Dim str As String  \n  str = "hoge"\n  WScript.Echo str';
  
-  writeTextFile(vbsFile, strData, {
+  writeAsText(vbsFile, strData, {
     trim: 'all',
     eol: 'crlf',
     bom: true,
@@ -480,17 +482,17 @@ export function writeTextFile(
     console.log('Writing successful');
   });
  */
-export function writeTextFileSync(
+export function writeAsTextSync(
   destPath: string,
   strData = '',
-  options: PreWriteTextFileOptions = {},
+  options: PrewriteAsTextOptions = {},
 ): void {
   if (!destPath) {
     throw new Error(`${ARG_ERR}destPath is empty.${_errLoc(Function)}`);
   }
 
   const filePath = path.resolve(destPath);
-  const writtenData = _preWriteTextFile(strData, options);
+  const writtenData = _prewriteAsText(strData, options);
 
   let addBOM = { addBOM: false };
   if (obtain(options, 'bom', false)) addBOM = { addBOM: true };

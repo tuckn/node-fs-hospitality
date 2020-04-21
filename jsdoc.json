@@ -43,7 +43,7 @@
     },
     "meta": {
       "title": "node-fs-hospitality",
-      "description": "Extra methods for fs object. e.g. readTextFile read a file with detecting automatically a character encoding. ",
+      "description": "Extra methods for fs object. e.g. readAsText read a file with detecting automatically a character encoding. ",
       "keyword": "fs, file, file system, read, write, text, character"
     },
     "search": true,

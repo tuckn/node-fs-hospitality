@@ -95,7 +95,7 @@ describe('fs-hospitality', () => {
     });
   });
 
-  test('readTextFile', async (done) => {
+  test('readAsText', async (done) => {
     const examples = [
       textSjisDos,
       textUtf16BeBomDos,
@@ -109,23 +109,23 @@ describe('fs-hospitality', () => {
 
     examples.forEach(async (file) => {
       // from a file-path
-      let textData = await fsh.readTextFile(file);
+      let textData = await fsh.readAsText(file);
       expect(textData).toStrictEqual(expectedTopStr);
       expect(textData).toStrictEqual(expectedWordStr);
       // from a Buffer
       const bufData = fs.readFileSync(file);
-      textData = await fsh.readTextFile(bufData);
+      textData = await fsh.readAsText(bufData);
       expect(textData).toStrictEqual(expectedTopStr);
       expect(textData).toStrictEqual(expectedWordStr);
     });
 
     // Test throwing Errors
-    await expect(fsh.readTextFile('')).rejects.toThrow();
+    await expect(fsh.readAsText('')).rejects.toThrow();
 
     done();
   });
 
-  test('readTextFileSync', () => {
+  test('readAsTextSync', () => {
     const examples = [
       textSjisDos,
       textUtf16BeBomDos,
@@ -139,22 +139,22 @@ describe('fs-hospitality', () => {
 
     examples.forEach((file) => {
       // from a file-path
-      let textData = fsh.readTextFileSync(file);
+      let textData = fsh.readAsTextSync(file);
       expect(textData).toStrictEqual(expectedTopStr);
       expect(textData).toStrictEqual(expectedWordStr);
       // from a Buffer
       const bufData = fs.readFileSync(file);
-      textData = fsh.readTextFileSync(bufData);
+      textData = fsh.readAsTextSync(bufData);
       expect(textData).toStrictEqual(expectedTopStr);
       expect(textData).toStrictEqual(expectedWordStr);
     });
 
     // Test throwing Errors
-    expect(() => fsh.readTextFileSync('')).toThrow();
+    expect(() => fsh.readAsTextSync('')).toThrow();
   });
 
   test('trimAllLines', () => {
-    const expecteds = [
+    const argSets = [
       {
         str: 'foo',
         all: 'foo',
@@ -199,7 +199,7 @@ describe('fs-hospitality', () => {
       },
     ];
 
-    expecteds.forEach((o) => {
+    argSets.forEach((o) => {
       expect(fsh.trimAllLines(o.str)).toBe(o.all);
       expect(fsh.trimAllLines(o.str, 'all')).toBe(o.all);
       expect(fsh.trimAllLines(o.str, 'start')).toBe(o.start);
@@ -208,7 +208,7 @@ describe('fs-hospitality', () => {
   });
 
   test('convertEOL', () => {
-    const expecteds = [
+    const argSets = [
       {
         str: 'foo',
         empty: 'foo',
@@ -239,7 +239,7 @@ describe('fs-hospitality', () => {
       },
     ];
 
-    expecteds.forEach((o) => {
+    argSets.forEach((o) => {
       expect(fsh.convertEOL(o.str)).toBe(o.empty);
       expect(fsh.convertEOL(o.str, '')).toBe(o.empty);
       expect(fsh.convertEOL(o.str, '\n')).toBe(o.lf);
@@ -294,7 +294,7 @@ describe('fs-hospitality', () => {
   const testTextLf =
     '{\n  "title": "test",  \n  "message": "テスト文字列"\n } ';
   const testTextCrLf = fsh.convertEOL(testTextLf, 'crlf');
-  const expecteds = [
+  const argSets = [
     {
       name: 'no-options_lf',
       opt: undefined,
@@ -363,7 +363,7 @@ describe('fs-hospitality', () => {
     // String Data
     const tmpPath = fsh.writeTmpFileSync(testTextLf);
     const readDataUtf8 = fs.readFileSync(tmpPath, { encoding: 'utf8' });
-    const readDataFsh = fsh.readTextFileSync(tmpPath);
+    const readDataFsh = fsh.readAsTextSync(tmpPath);
 
     expect(readDataUtf8).toBe(testTextLf);
     expect(readDataFsh).toBe(testTextLf);
@@ -373,39 +373,39 @@ describe('fs-hospitality', () => {
     /** @todo Binary Data */
   });
 
-  test('writeTextFile', async (done) => {
-    expecteds.forEach(async (o) => {
+  test('writeAsText', async (done) => {
+    argSets.forEach(async (o) => {
       const tmpPath = fsh.makeTmpPath('', 'test_', '.txt');
-      await fsh.writeTextFile(tmpPath, o.inputText, o.opt);
+      await fsh.writeAsText(tmpPath, o.inputText, o.opt);
 
       const readData = fs.readFileSync(tmpPath);
       expect(fsh.detectTextEncoding(readData)).toBe(o.encoding);
       expect(fsh.detectTextEol(readData)).toBe(o.eol);
-      expect(fsh.readTextFileSync(readData)).toBe(o.outputText);
+      expect(fsh.readAsTextSync(readData)).toBe(o.outputText);
       // Clean
       fs.unlinkSync(tmpPath);
     });
 
     // Test throwing Errors
-    await expect(fsh.writeTextFile('')).rejects.toThrow();
+    await expect(fsh.writeAsText('')).rejects.toThrow();
 
     done();
   });
 
-  test('writeTextFileSync', () => {
-    expecteds.forEach((o) => {
+  test('writeAsTextSync', () => {
+    argSets.forEach((o) => {
       const tmpPath = fsh.makeTmpPath('', `test_${o.name}`, '.txt');
-      fsh.writeTextFileSync(tmpPath, o.inputText, o.opt);
+      fsh.writeAsTextSync(tmpPath, o.inputText, o.opt);
 
       const readData = fs.readFileSync(tmpPath);
       expect(fsh.detectTextEncoding(readData)).toBe(o.encoding);
       expect(fsh.detectTextEol(readData)).toBe(o.eol);
-      expect(fsh.readTextFileSync(readData)).toBe(o.outputText);
+      expect(fsh.readAsTextSync(readData)).toBe(o.outputText);
       // Clean
       fs.unlinkSync(tmpPath);
     });
 
     // Test throwing Errors
-    expect(() => fsh.writeTextFileSync('')).toThrow();
+    expect(() => fsh.writeAsTextSync('')).toThrow();
   });
 });

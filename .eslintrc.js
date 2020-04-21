@@ -45,6 +45,7 @@ module.exports = {
     'import/no-extraneous-dependencies': 'warn',
     'import/default': 'warn',
     'import/order': 'off',
+    'import/prefer-default-export': 'off',
     'newline-after-description': 'off',
     'no-console': 'off',
     'no-empty': ['error', { allowEmptyCatch: true }],
