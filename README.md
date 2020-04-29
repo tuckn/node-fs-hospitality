@@ -75,6 +75,128 @@ fsh.writeAsTextSync('D:\\Test\\utf8bom.wsf', vbsCode, {}).then(() => {
 });
 ```
 
+### Recursively Read Directory
+
+```js
+const fsh = require('@tuckn/fs-hospitality');
+
+// D:\Test\
+// │  FILE_ROOT1.TXT
+// │  fileRoot2-Symlink.log
+// │  fileRoot2.log
+// │
+// ├─DirBar
+// │  │  fileBar1.txt
+// │  │
+// │  └─DirQuux
+// │          fileQuux1-Symlink.txt
+// │          fileQuux1.txt
+// │
+// ├─DirFoo
+// └─DirFoo-Symlink
+
+fsh.readdirRecursively('D:\\Test').then((files) => {
+  console.log(files);
+  // Returns [
+  //   'DirFoo-Symlink',
+  //   'fileRoot2-Symlink.log',
+  //   'fileRoot2.log',
+  //   'FILE_ROOT1.TXT',
+  //   'DirFoo',
+  //   'DirBar',
+  //   'DirBar\\fileBar1.txt',
+  //   'DirBar\\DirQuux',
+  //   'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
+  //   'DirBar\\DirQuux\\fileQuux1.txt' ]
+});
+```
+
+Use `withFileTypes` option
+
+```js
+const fsh = require('@tuckn/fs-hospitality');
+
+// D:\Test\
+// │  FILE_ROOT1.TXT
+// │  fileRoot2-Symlink.log
+// │  fileRoot2.log
+// │
+// └─DirBar
+//         fileBar1.txt
+
+readdirRecursively('D:\\Test', { withFileTypes: true }).then((files) => {
+  console.log(files);
+  // Returns [
+  //   {
+  //     name: 'fileRoot2-Symlink.log',
+  //     relPath: 'fileRoot2-Symlink.log',
+  //     path: 'D:\\Test\\fileRoot2-Symlink.log',
+  //     isDirectory: false,
+  //     isFile: false,
+  //     isSymbolicLink: true
+  //   },
+  //   {
+  //     name: 'fileRoot2.log',
+  //     relPath: 'fileRoot2.log',
+  //     path: 'D:\\Test\\fileRoot2.log',
+  //     isDirectory: false,
+  //     isFile: true,
+  //     isSymbolicLink: false
+  //   },
+  //   {
+  //     name: 'FILE_ROOT1.TXT',
+  //     relPath: 'FILE_ROOT1.TXT',
+  //     path: 'D:\\Test\\FILE_ROOT1.TXT',
+  //     isDirectory: false,
+  //     isFile: true,
+  //     isSymbolicLink: false
+  //   },
+  //   {
+  //     name: 'DirBar',
+  //     relPath: 'DirBar',
+  //     path: 'D:\\Test\\DirBar',
+  //     isDirectory: true,
+  //     isFile: false,
+  //     isSymbolicLink: false
+  //   },
+  //   {
+  //     name: 'fileBar1.txt',
+  //     relPath: 'DirBar\\fileBar1.txt',
+  //     path: 'D:\\Test\\DirBar\\fileBar1.txt',
+  //     isDirectory: false,
+  //     isFile: true,
+  //     isSymbolicLink: false
+  //   },
+  // ]
+});
+```
+
+### Create Symbolic-link for Windows
+
+Asynchronous
+
+```js
+const fsh = require('@tuckn/fs-hospitality');
+
+// on Windows, use mklink of command in Command-Prompt and requires admin rights
+fsh.mklink('D:\\MySrc\\TestDir', 'C:\\Test').then((stdout) => {
+  console.log(stdout);
+  // Created the symbolic link on "C:\"
+});
+```
+
+Synchronous
+
+```js
+const fsh = require('@tuckn/fs-hospitality');
+
+// on Windows, use mklink of command in Command-Prompt and requires admin rights
+const stdout = fsh.mklinkSync('D:\\MySrc\\TestDir', 'C:\\Test');
+// Created the symbolic link on "C:\"
+console.log(stdout);
+});
+```
+
 ### Others
 
 Make a temporary path.
@@ -148,13 +270,13 @@ Options:
   -h, --help             display help for command
 ```
 
-Below are examples on Windows.
+The below is example on Windows.
 
 ```console
 > fs-hospitality conv-text "D:\Test\src.wsf" --trim "all" --eol "dos" --bom
 ```
 
-## API
+## Documentation
 
 All specifications are written [here](https://docs.tuckn.net/node-fs-hospitality).
 

@@ -1,4 +1,5 @@
 import * as chardet from 'chardet';
+import { exec, execSync } from 'child_process';
 import * as encodingJp from 'encoding-japanese';
 import * as fs from 'fs';
 import * as iconv from 'iconv-lite';
@@ -79,6 +80,27 @@ export function detectTextEncoding(textData: Buffer | string): string {
 }
 
 /**
+ * Decodes a Buffer of text with automatically detecting encoding
+ *
+ * @memberof API
+ * @param {Buffer} textBuf - A Buffer of text
+ * @param {string} [encoding=''] - A specifing encoding. falsy to auto
+ * @returns {string} - A encoded string
+ * @example
+  const { decodeTextBuffer } = require('@tuckn/fs-hospitality');
+ 
+  const textBuf = fs.readFileSync('D:\\Test\\SjisCRLF.txt');
+  const text = decodeTextBuffer(textBuf);
+  // Returns: 'これはshft-JISで書かれたファイルです。'
+ */
+export function decodeTextBuffer(textBuf: Buffer, encoding = ''): string {
+  let enc = encoding;
+  if (!encoding) enc = detectTextEncoding(textBuf);
+
+  return iconv.decode(textBuf, enc);
+}
+
+/**
  * Detects the EOL (End of Line) character of a Buffer or a file-path.
  *
  * @memberof API
@@ -96,9 +118,7 @@ export function detectTextEncoding(textData: Buffer | string): string {
  */
 export function detectTextEol(textData: Buffer | string): string {
   const buf = textDataToBuf(textData);
-  const enc = detectTextEncoding(buf);
-
-  const text = iconv.decode(buf, enc);
+  const text = decodeTextBuffer(buf);
   if (!text) {
     throw new Error(`${ARG_ERR}textData is empty.${_errLoc(Function)}`);
   }
@@ -153,27 +173,22 @@ export function readAsText(
     // Buffer
     if (Buffer.isBuffer(textFile)) {
       try {
-        let enc = encoding;
-        if (!encoding) enc = detectTextEncoding(textFile);
-
-        resolve(iconv.decode(textFile, enc));
+        return resolve(decodeTextBuffer(textFile, encoding));
       } catch (e) {
-        reject(e);
+        return reject(e);
       }
-      return;
     }
 
     // String (A file-path)
     const filePath = path.resolve(textFile);
-    fs.readFile(filePath, (err, data) => {
+
+    return fs.readFile(filePath, (err, data) => {
       if (err) return reject(err);
 
       try {
-        let enc = encoding;
-        if (!encoding) enc = detectTextEncoding(data);
-
         // if (encoding === 'binary') return resolve(data);
-        return resolve(iconv.decode(data, enc)); // @todo When enc is 'binary'
+        // @todo When enc is 'binary'
+        return resolve(decodeTextBuffer(data, encoding));
       } catch (e) {
         return reject(e);
       }
@@ -182,7 +197,7 @@ export function readAsText(
 }
 
 /**
- * The asynchronous version of this API: readAsText().
+ * The synchronous version of this API: readAsText().
  *
  * @memberof API
  * @param {(Buffer|string)} textFile - A Buffer or a file-path
@@ -209,22 +224,15 @@ export function readAsTextSync(
   }
 
   // Buffer
-  if (Buffer.isBuffer(textFile)) {
-    let enc = encoding;
-    if (!encoding) enc = detectTextEncoding(textFile);
-
-    return iconv.decode(textFile, enc);
-  }
+  if (Buffer.isBuffer(textFile)) return decodeTextBuffer(textFile, encoding);
 
   // String (A file-path)
   const filePath = path.resolve(textFile);
   const data = fs.readFileSync(filePath);
 
-  let enc = encoding;
-  if (!encoding) enc = detectTextEncoding(data);
-
   // if (encoding === 'binary') return data;
-  return iconv.decode(data, enc); // @todo When enc is 'binary'
+  // @todo When enc is 'binary'
+  return decodeTextBuffer(data, encoding);
 }
 
 /**
@@ -277,11 +285,17 @@ export function convertEOL(strData: string, eol = ''): string {
   const fs = require('fs');
   if (fs.existsSync(tmpPath1)) throw new Error('Oops!');
  
+  // Makes on the current working direcotry
   const tmpPath2 = makeTmpPath('.');
   // Returns: 'D:\test\2a5d35c8-7214-4ec7-a41d-a371b19273e7'
  
+  // Make on SMB path
   const tmpPath3 = makeTmpPath('\\\\server\\public');
   // Returns: '\\server\public\01fa6ce7-e6d3-4b50-bdcd-19679c49bef2'
+ 
+  // with the prefix name
+  const tmpPath2 = makeTmpPath('', 'MyTemp_');
+  // Returns: 'C:\Users\YourName\AppData\Local\Temp\MyTemp_42dc1759-b744-4f2a-840f-e6fa27191cff'
  
   const tmpPath4 = makeTmpPath('R:', 'tmp_', '.log');
   // Returns: 'R:\tmp_14493643-792d-4b0d-b2af-c74531db625e.log'
@@ -461,7 +475,7 @@ export function writeAsText(
 }
 
 /**
- * The asynchronous version of this API: writeAsText().
+ * The synchronous version of this API: writeAsText().
  *
  * @memberof API
  * @param {string} destPath - A destination file-path
@@ -503,4 +517,421 @@ export function writeAsTextSync(
     filePath,
     iconv.encode(writtenData, encoding, addBOM),
   );
+}
+
+/**
+ *  Creates a new link (also known as Symbolic Link) to an existing file. Similar to {@link https://nodejs.org/api/fs.html#fs_fs_linksync_existingpath_newpath|Node.js-Path}. But on Windows, use mklink of command in Command-Prompt. so requires admin rights.
+ *
+ * @memberof API
+ * @param {string} existingPath - A source file or direcotry
+ * @param {string} newPath - A destination path
+ * @returns {Promise<string>} - Returns mklink stdout
+ * @example
+  const { mklink } = require('@tuckn/fs-hospitality');
+ 
+  // on Windows, use mklink of command in Command-Prompt and requires admin rights
+  mklink('D:\\MySrc\\TestDir', 'C:\\Test').then((stdout) => {
+    console.log(stdout);
+    // Created the symbolic link on "C:\"
+  });
+ */
+export async function mklink(
+  existingPath: string,
+  newPath: string,
+): Promise<void | string> {
+  if (os.platform() !== 'win32') {
+    return new Promise((resolve, reject) => {
+      fs.link(existingPath, newPath, (err) => {
+        if (err) return reject(err);
+        return resolve();
+      });
+    });
+  }
+
+  if (!existingPath) {
+    throw new Error(`${ARG_ERR}existingPath is empty.${_errLoc(Function)}`);
+  }
+
+  if (!newPath) {
+    throw new Error(`${ARG_ERR}newPath is empty.${_errLoc(Function)}`);
+  }
+
+  const mainCmd = 'mklink';
+  let argsStr = '';
+
+  return new Promise((resolve, reject) => {
+    fs.stat(existingPath, (fsErr, statSrc) => {
+      if (fsErr) return reject(fsErr);
+
+      if (statSrc.isFile()) {
+        argsStr = `"${newPath}" "${existingPath}"`;
+      } else if (statSrc.isDirectory()) {
+        argsStr = `/D "${newPath}" "${existingPath}"`;
+      } else {
+        return reject(
+          new Error(
+            `${ARG_ERR}${newPath} is not the file or direcotry.${_errLoc(
+              Function,
+            )}`,
+          ),
+        );
+      }
+
+      return exec(
+        `${mainCmd} ${argsStr}`,
+        { encoding: 'buffer' },
+        (err, stdout, stderr) => {
+          if (err) return reject(decodeTextBuffer(stderr));
+          return resolve(decodeTextBuffer(stdout));
+        },
+      );
+    });
+  });
+}
+
+/**
+ * The synchronous version of this API: mklink().
+ *
+ * @memberof API
+ * @param {string} existingPath - A source file or direcotry
+ * @param {string} newPath - A destination path
+ * @returns {string} - Returns mklink stdout
+ * @example
+  const { mklinkSync } = require('@tuckn/fs-hospitality');
+ 
+  // on Windows, use mklink of command in Command-Prompt and requires admin rights
+  const stdout = mklinkSync('D:\\MySrc\\TestDir', 'C:\\Test');
+  // Created the symbolic link on "C:\"
+ */
+export function mklinkSync(
+  existingPath: string,
+  newPath: string,
+): void | string {
+  if (os.platform() !== 'win32') {
+    return fs.linkSync(existingPath, newPath);
+  }
+
+  if (!existingPath) {
+    throw new Error(`${ARG_ERR}existingPath is empty.${_errLoc(Function)}`);
+  }
+
+  if (!newPath) {
+    throw new Error(`${ARG_ERR}newPath is empty.${_errLoc(Function)}`);
+  }
+
+  const mainCmd = 'mklink';
+  let argsStr = '';
+
+  const statSrc = fs.statSync(existingPath);
+  if (statSrc.isFile()) {
+    argsStr = `"${newPath}" "${existingPath}"`;
+  } else if (statSrc.isDirectory()) {
+    argsStr = `/D "${newPath}" "${existingPath}"`;
+  } else {
+    throw new Error(
+      `${ARG_ERR}${newPath} is not the file or direcotry.${_errLoc(Function)}`,
+    );
+  }
+
+  return decodeTextBuffer(execSync(`${mainCmd} ${argsStr}`));
+}
+
+/**
+ * Promise fs.readdir. @link {https://nodejs.org/dist/latest-v12.x/docs/api/fs.html#fs_fs_promises_api|Node.js fsPromises}
+ *
+ * @memberof API
+ * @param {string} dirPath - A directory path
+ * @param {object} [options] - See {@link https://nodejs.org/api/fs.html#fs_fs_readdir_path_options_callback|Node.js fs.readdir}
+ * @param {boolean} [options.withFileTypes=false] - If set to true, returns array of fs.Dirent objects
+ * @returns {Promise<string[]|Buffer[]|fs.Dirent[]>} - Returns array of fs.Dirent
+ */
+export function fsPromiseReaddir(
+  dirPath: string,
+  options = {},
+): Promise<string[] | Buffer[] | fs.Dirent[]> {
+  if (!dirPath) {
+    throw new Error(`${ARG_ERR}dirPath is empty.${_errLoc(Function)}`);
+  }
+
+  // Get the top file paths
+  return new Promise((resolve, reject) => {
+    fs.readdir(dirPath, options, (err, files) => {
+      if (err) return reject(err);
+      return resolve(files);
+    });
+  });
+}
+
+/**
+ * @typedef {object} FileInfo
+ * @property {string} name -
+ * @property {string} path -
+ * @property {boolean} isDirectory -
+ * @property {boolean} isFile -
+ * @property {boolean} isSymbolicLink -
+ */
+export interface FileInfo {
+  name: string;
+  relPath: string;
+  path: string;
+  isDirectory: boolean;
+  isFile: boolean;
+  isSymbolicLink: boolean;
+}
+
+/**
+ * Sort-Function for FileInfo objects of Array. Sorts with name and file-type.
+ *
+ * @private
+ * @param {FileInfo} a -
+ * @param {FileInfo} b -
+ * @returns {number} - 0|1|-1
+ */
+function sortFileInfo(a: FileInfo, b: FileInfo): 0 | 1 | -1 {
+  let comparison: 0 | 1 | -1 = 0;
+
+  if (a.isDirectory && !b.isDirectory) {
+    comparison = 1;
+  } else if (!a.isDirectory && b.isDirectory) {
+    comparison = -1;
+  } else if (a.relPath > b.relPath) {
+    comparison = 1;
+  } else if (a.relPath < b.relPath) {
+    comparison = -1;
+  }
+
+  return comparison;
+}
+
+/**
+ * Recursively list all file paths in a directory.
+ *
+ * @memberof API
+ * @param {string} dirPath - A directory path
+ * @param {object} options - Optional parameters
+ * @param {boolean} [options.isOnlyDir=false] - Exacting directories only
+ * @param {boolean} [options.isOnlyFile=false] - Exacting files only
+ * @param {boolean} [options.excludesSymlink=false] - Excluding symbolic-links
+ * @param {string} [options.matchedRegExp] - Ex. "\\d+\\.txt$"
+ * @param {string} [options.ignoredRegExp] - Ex. "[_\\-.]cache\\d+"
+ * @param {boolean} [options.withFileTypes=false] - If true, return fs.Dirent[]
+ * @param {string} [options._prefixDirName] - @private The internal option
+ * @returns {Promise<string[]|FileInfo[]>} - { resolve:string, reject:Error }
+ * @example
+  const { readdirRecursively } = require('@tuckn/fs-hospitality');
+ 
+  // D:\Test\
+  // │  FILE_ROOT1.TXT
+  // │  fileRoot2-Symlink.log
+  // │  fileRoot2.log
+  // │
+  // ├─DirBar
+  // │  │  fileBar1.txt
+  // │  │
+  // │  └─DirQuux
+  // │          fileQuux1-Symlink.txt
+  // │          fileQuux1.txt
+  // │
+  // ├─DirFoo
+  // └─DirFoo-Symlink
+ 
+  readdirRecursively('D:\\Test').then((files) => {
+    console.log(files);
+    // Returns [
+    //   'DirFoo-Symlink',
+    //   'fileRoot2-Symlink.log',
+    //   'fileRoot2.log',
+    //   'FILE_ROOT1.TXT',
+    //   'DirFoo',
+    //   'DirBar',
+    //   'DirBar\\fileBar1.txt',
+    //   'DirBar\\DirQuux',
+    //   'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
+    //   'DirBar\\DirQuux\\fileQuux1.txt' ]
+ 
+  readdirRecursively('D:\\Test', { withFileTypes: true }).then((files) => {
+    console.log(files);
+    // Returns [
+    //   {
+    //     name: 'DirFoo-Symlink',
+    //     relPath: 'DirFoo-Symlink',
+    //     path: 'D:\\Test\\DirFoo-Symlink',
+    //     isDirectory: false,
+    //     isFile: false,
+    //     isSymbolicLink: true
+    //   },
+    //   {
+    //     name: 'fileRoot2-Symlink.log',
+    //     relPath: 'fileRoot2-Symlink.log',
+    //     path: 'D:\\Test\\fileRoot2-Symlink.log',
+    //     isDirectory: false,
+    //     isFile: false,
+    //     isSymbolicLink: true
+    //   },
+    //   {
+    //     name: 'fileRoot2.log',
+    //     relPath: 'fileRoot2.log',
+    //     path: 'D:\\Test\\fileRoot2.log',
+    //     isDirectory: false,
+    //     isFile: true,
+    //     isSymbolicLink: false
+    //   },
+    //   {
+    //     name: 'FILE_ROOT1.TXT',
+    //     relPath: 'FILE_ROOT1.TXT',
+    //     path: 'D:\\Test\\FILE_ROOT1.TXT',
+    //     isDirectory: false,
+    //     isFile: true,
+    //     isSymbolicLink: false
+    //   },
+    //   {
+    //     name: 'DirFoo',
+    //     relPath: 'DirFoo',
+    //     path: 'D:\\Test\\DirFoo',
+    //     isDirectory: true,
+    //     isFile: false,
+    //     isSymbolicLink: false
+    //   },
+    //   {
+    //     name: 'DirBar',
+    //     relPath: 'DirBar',
+    //     path: 'D:\\Test\\DirBar',
+    //     isDirectory: true,
+    //     isFile: false,
+    //     isSymbolicLink: false
+    //   },
+    //   {
+    //     name: 'fileBar1.txt',
+    //     relPath: 'DirBar\\fileBar1.txt',
+    //     path: 'D:\\Test\\DirBar\\fileBar1.txt',
+    //     isDirectory: false,
+    //     isFile: true,
+    //     isSymbolicLink: false
+    //   },
+    //   {
+    //     name: 'DirQuux',
+    //     relPath: 'DirBar\\DirQuux',
+    //     path: 'D:\\Test\\DirBar\\DirQuux',
+    //     isDirectory: true,
+    //     isFile: false,
+    //     isSymbolicLink: false
+    //   },
+    //   {
+    //     name: 'fileQuux1-Symlink.txt',
+    //     relPath: 'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
+    //     path: 'D:\\Test\\DirBar\\DirQuux\\fileQuux1-Symlink.txt',
+    //     isDirectory: false,
+    //     isFile: false,
+    //     isSymbolicLink: true
+    //   },
+    //   {
+    //     name: 'fileQuux1.txt',
+    //     relPath: 'DirBar\\DirQuux\\fileQuux1.txt',
+    //     path: 'D:\\Test\\DirBar\\DirQuux\\fileQuux1.txt',
+    //     isDirectory: false,
+    //     isFile: true,
+    //     isSymbolicLink: false
+    //   }
+    // ]
+  });
+ */
+export async function readdirRecursively(
+  dirPath: string,
+  options = {},
+): Promise<string[] | FileInfo[]> {
+  // Get the all of top files
+  const dirents = (await fsPromiseReaddir(dirPath, {
+    withFileTypes: true,
+  })) as Array<fs.Dirent>;
+
+  // Filtering Options
+  const isOnlyFile = obtain(options, 'isOnlyFile', false);
+  const isOnlyDir = obtain(options, 'isOnlyDir', false);
+  const excludesSymlink = obtain(options, 'excludesSymlink', false);
+
+  const matchedRegExp = obtain(options, 'matchedRegExp', null);
+  const mtchRE = matchedRegExp ? new RegExp(matchedRegExp, 'i') : null;
+
+  const ignoredRegExp = obtain(options, 'ignoredRegExp', null);
+  const ignrRE = ignoredRegExp ? new RegExp(ignoredRegExp, 'i') : null;
+
+  const _prefixDirName = obtain(options, '_prefixDirName', '');
+
+  // let files: string[] | FileInfo[] = [];
+  const files: FileInfo[] = [];
+  const dirs: FileInfo[] = [];
+
+  dirents.forEach((dirent) => {
+    const relPath = path.join(_prefixDirName, dirent.name);
+
+    if (!dirent.isDirectory()) {
+      // Filtering
+      if (isOnlyDir) return;
+      if (excludesSymlink && dirent.isSymbolicLink()) return;
+      if (mtchRE && !mtchRE.test(relPath)) return;
+      if (ignrRE && ignrRE.test(relPath)) return;
+
+      files.push({
+        name: dirent.name,
+        relPath,
+        path: path.resolve(dirPath, dirent.name),
+        isDirectory: false,
+        isFile: dirent.isFile(),
+        isSymbolicLink: dirent.isSymbolicLink(),
+      });
+    } else {
+      // @note
+      // The dires will be filterd after getting subdirectory information
+      dirs.push({
+        name: dirent.name,
+        relPath,
+        path: path.resolve(dirPath, dirent.name),
+        isDirectory: true,
+        isFile: false,
+        isSymbolicLink: dirent.isSymbolicLink(),
+      });
+    }
+  });
+
+  // Get the all of sub directoies files recursively
+  // let dirsBranches: string[] | FileInfo[] = [];
+  let dirsBranches: FileInfo[] = [];
+
+  await Promise.all(
+    dirs.map(async (dir) => {
+      const subDir = (await readdirRecursively(dir.path, {
+        ...options,
+        withFileTypes: true,
+        _prefixDirName: dir.relPath,
+      })) as Array<FileInfo>;
+
+      // Filtering the top directory
+      if (
+        !isOnlyFile &&
+        !(excludesSymlink && dir.isSymbolicLink) &&
+        (!mtchRE || (mtchRE && mtchRE.test(dir.relPath))) &&
+        !(ignrRE && ignrRE.test(dir.relPath))
+      ) {
+        dirsBranches = dirsBranches.concat(dir);
+      }
+
+      if (subDir.length > 0) dirsBranches = dirsBranches.concat(subDir);
+    }),
+  );
+
+  // Join
+  let rtnFilesInfo: FileInfo[] = [];
+  if (files.length > 0) rtnFilesInfo = rtnFilesInfo.concat(files);
+  if (dirsBranches.length > 0) rtnFilesInfo = rtnFilesInfo.concat(dirsBranches);
+
+  // @todo
+  // Sort
+  // files.sort(sortFileInfo);
+
+  const withFileTypes = obtain(options, 'withFileTypes', false);
+  if (!withFileTypes) {
+    return rtnFilesInfo.map((file) => file.relPath);
+  }
+
+  return rtnFilesInfo;
 }

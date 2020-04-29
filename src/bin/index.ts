@@ -12,6 +12,35 @@ import * as fsh from '../lib/index';
  * @namespace CLI
  */
 
+// ls
+
+/**
+ * @function ls
+ * @memberof CLI
+ * @param {string} dirPath - A directory-path
+ * @param {object} [options]
+ * @param {string} [options.type] - "-T" or "--type" and "all", "encoding", "eol"
+ * @returns {string}
+ * @example
+// Ex. on Windows
+> npx fs-hospitality ls "D:\Test" --type "encoding"
+ */
+program
+  .command('ls <dirPath>')
+  .version('1.0.0')
+  .description('Detecting a text specification.')
+  .option('-D, --is-only-dir', 'Exacting directories only')
+  .option('-F, --is-only-file', 'Exacting files only')
+  .option('-S, --excludes-symlink', 'Excluding symblic-links')
+  .option('-M, --matched-reg-exp <exp>', 'Ex. "\\d+\\.txt$"')
+  .option('-I, --ignored-reg-exp <exp>', 'Ex. "[_\\-.]cache\\d+"')
+  .option('-W, --with-file-types', 'Returns file info objects (fs.Dirent)')
+  .action(async (dirPath, options) => {
+    const dest = await fsh.readdirRecursively(dirPath, options);
+
+    console.dir(dest);
+  });
+
 // detect-text-spec
 
 /**

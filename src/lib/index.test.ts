@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import * as rimraf from 'rimraf';
 
 import * as fsh from './index';
 
@@ -58,6 +59,26 @@ describe('fs-hospitality', () => {
     // Test throwing Errors
     [''].forEach((errVal) => {
       expect(() => fsh.detectTextEncoding(errVal)).toThrow();
+    });
+  });
+
+  test('decodeTextBuffer', () => {
+    const examples = [
+      textSjisDos,
+      textUtf16BeBomDos,
+      textUtf16LeBomDos,
+      textUtf16LeUnix,
+      textUtf8BomDos,
+      textUtf8Unix,
+    ];
+    const expectedTopStr = expect.stringContaining(TEST_WORDS_TOP);
+    const expectedWordStr = expect.stringContaining(TEST_WORDS_STR);
+
+    examples.forEach(async (file) => {
+      const bufData = fs.readFileSync(file);
+      const textData = fsh.decodeTextBuffer(bufData);
+      expect(textData).toStrictEqual(expectedTopStr);
+      expect(textData).toStrictEqual(expectedWordStr);
     });
   });
 
@@ -407,5 +428,297 @@ describe('fs-hospitality', () => {
 
     // Test throwing Errors
     expect(() => fsh.writeAsTextSync('')).toThrow();
+  });
+
+  test('mklink', async (done) => {
+    const pathPairs = [
+      { srcPath: dirSamples, destPath: fsh.makeTmpPath() },
+      { srcPath: fileNonText, destPath: fsh.makeTmpPath() },
+    ];
+
+    await Promise.all(
+      pathPairs.map(async (pair) => {
+        // ** Administrator authority is required to execute **
+        await fsh.mklink(pair.srcPath, pair.destPath);
+
+        /**
+         * @description fs.stat.isSymbolicLink() returns false for a symbolic link on Windows
+         * `const destStat = fs.statSync(pair.destPath);` is not work.
+         * Must use fs.lstat
+         */
+        return fs.lstat(pair.destPath, (fsErr, destStat) => {
+          if (fsErr) return fsErr;
+
+          expect(destStat.isSymbolicLink()).toBeTruthy();
+
+          return fs.unlink(pair.destPath, (err) => {
+            if (err) return err;
+            return true;
+          });
+        });
+      }),
+    );
+
+    // Test throwing Errors
+    await Promise.all(
+      [''].map(async (errVal) => {
+        await expect(fsh.mklink(errVal, errVal)).rejects.toThrow();
+        await expect(fsh.mklink('dummy-path', errVal)).rejects.toThrow();
+        await expect(fsh.mklink(errVal, 'dummy-path')).rejects.toThrow();
+      }),
+    );
+
+    done();
+  });
+
+  test('mklinkSync', () => {
+    const pathPairs = [
+      { srcPath: dirSamples, destPath: fsh.makeTmpPath() },
+      { srcPath: fileNonText, destPath: fsh.makeTmpPath() },
+    ];
+
+    pathPairs.forEach((pair) => {
+      // ** Administrator authority is required to execute **
+      fsh.mklinkSync(pair.srcPath, pair.destPath);
+
+      /**
+       * @description fs.stat.isSymbolicLink() returns false for a symbolic link on Windows
+       * `const destStat = fs.statSync(pair.destPath);` is not work.
+       * Must use fs.lstat
+       */
+      const destStat = fs.lstatSync(pair.destPath);
+      expect(destStat.isSymbolicLink()).toBeTruthy();
+
+      fs.unlinkSync(pair.destPath);
+    });
+
+    // Test throwing Errors
+    [''].forEach((errVal) => {
+      expect(() => fsh.mklinkSync(errVal, errVal)).toThrow();
+      expect(() => fsh.mklinkSync('dummy-path', errVal)).toThrow();
+      expect(() => fsh.mklinkSync(errVal, 'dummy-path')).toThrow();
+    });
+  });
+
+  test('readdirRecursively', async (done) => {
+    /*
+     * @note A structure to test
+%TEMP%test-readdirRecursively_xxxxx/
+│  FILE_ROOT1.TXT
+│  fileRoot2-Symlink.log
+│  fileRoot2.log
+│
+├─DirBar
+│  │  fileBar1.txt
+│  │
+│  └─DirQuux
+│          fileQuux1-Symlink.txt
+│          fileQuux1.txt
+│
+├─DirFoo
+└─DirFoo-Symlink
+     */
+    // The root files
+    const testDir = fsh.makeTmpPath('', 'test-readdirRecursively_');
+    const fileRoot1 = path.join(testDir, 'FILE_ROOT1.TXT');
+    const fileRoot2 = path.join(testDir, 'fileRoot2.log');
+    const fileRoot2Sym = path.join(testDir, 'fileRoot2-Symlink.log');
+    // Create files
+    fs.mkdirSync(testDir);
+    fs.writeFileSync(fileRoot1, 'fileRoot1');
+    fs.writeFileSync(fileRoot2, 'fileRoot2');
+    fsh.mklinkSync(fileRoot2, fileRoot2Sym);
+
+    // The sub directory1 (DirFoo)
+    const dirFoo = path.join(testDir, 'DirFoo');
+    const dirFooSym = path.join(testDir, 'DirFoo-Symlink');
+    // Create files
+    fs.mkdirSync(dirFoo);
+    fsh.mklinkSync(dirFoo, dirFooSym);
+
+    // The sub directory2 (DriBar)
+    const dirBar = path.join(testDir, 'DirBar');
+    const fileBar1 = path.join(dirBar, 'fileBar1.txt');
+    const dirQuux = path.join(dirBar, 'DirQuux');
+    const fileQuux1 = path.join(dirQuux, 'fileQuux1.txt');
+    const fileQuux1Sym = path.join(dirQuux, 'fileQuux1-Symlink.txt');
+    // Create files
+    fs.mkdirSync(dirBar);
+    fs.writeFileSync(fileBar1, 'fileBar1');
+    fs.mkdirSync(dirQuux);
+    fs.writeFileSync(fileQuux1, 'fileQuux1');
+    fsh.mklinkSync(fileQuux1, fileQuux1Sym);
+
+    const expectingFileObjs = [
+      {
+        name: 'DirFoo-Symlink',
+        relPath: 'DirFoo-Symlink',
+        path: dirFooSym,
+        isDirectory: false,
+        isFile: false,
+        isSymbolicLink: true,
+      },
+      {
+        name: 'FILE_ROOT1.TXT',
+        relPath: 'FILE_ROOT1.TXT',
+        path: fileRoot1,
+        isDirectory: false,
+        isFile: true,
+        isSymbolicLink: false,
+      },
+      {
+        name: 'fileRoot2-Symlink.log',
+        relPath: 'fileRoot2-Symlink.log',
+        path: fileRoot2Sym,
+        isDirectory: false,
+        isFile: false,
+        isSymbolicLink: true,
+      },
+      {
+        name: 'fileRoot2.log',
+        relPath: 'fileRoot2.log',
+        path: fileRoot2,
+        isDirectory: false,
+        isFile: true,
+        isSymbolicLink: false,
+      },
+      {
+        name: 'DirBar',
+        relPath: 'DirBar',
+        path: dirBar,
+        isDirectory: true,
+        isFile: false,
+        isSymbolicLink: false,
+      },
+      {
+        name: 'DirFoo',
+        relPath: 'DirFoo',
+        path: dirFoo,
+        isDirectory: true,
+        isFile: false,
+        isSymbolicLink: false,
+      },
+      {
+        name: `fileBar1.txt`,
+        relPath: `DirBar${path.sep}fileBar1.txt`,
+        path: fileBar1,
+        isDirectory: false,
+        isFile: true,
+        isSymbolicLink: false,
+      },
+      {
+        name: `DirQuux`,
+        relPath: `DirBar${path.sep}DirQuux`,
+        path: dirQuux,
+        isDirectory: true,
+        isFile: false,
+        isSymbolicLink: false,
+      },
+      {
+        name: `fileQuux1-Symlink.txt`,
+        relPath: `DirBar${path.sep}DirQuux${path.sep}fileQuux1-Symlink.txt`,
+        path: fileQuux1Sym,
+        isDirectory: false,
+        isFile: false,
+        isSymbolicLink: true,
+      },
+      {
+        name: `fileQuux1.txt`,
+        relPath: `DirBar${path.sep}DirQuux${path.sep}fileQuux1.txt`,
+        path: fileQuux1,
+        isDirectory: false,
+        isFile: true,
+        isSymbolicLink: false,
+      },
+    ];
+
+    // No options
+    const allRelPaths = (await fsh.readdirRecursively(testDir)) as Array<
+      string
+    >;
+
+    expect(allRelPaths).toHaveLength(expectingFileObjs.length);
+
+    expectingFileObjs.forEach((expectObj) => {
+      expect(allRelPaths).toEqual(expect.arrayContaining([expectObj.relPath]));
+    });
+
+    // The withFileTypes option
+    const allFileObjs = (await fsh.readdirRecursively(testDir, {
+      withFileTypes: true,
+    })) as Array<fsh.FileInfo>;
+
+    expect(allFileObjs).toHaveLength(expectingFileObjs.length);
+
+    allFileObjs.forEach((fileObj) => {
+      expect(expectingFileObjs).toEqual(expect.arrayContaining([fileObj]));
+    });
+
+    const allFileNums = allRelPaths.length;
+    const allDirNums = allFileObjs.filter((obj) => obj.isDirectory).length;
+    const allNoneDirNums = allFileNums - allDirNums;
+    let relPaths: string[];
+    let fileObjs: fsh.FileInfo[];
+
+    // isOnlyDir option
+    fileObjs = (await fsh.readdirRecursively(testDir, {
+      isOnlyDir: true,
+      withFileTypes: true,
+    })) as Array<fsh.FileInfo>;
+
+    expect(fileObjs).toHaveLength(allDirNums);
+
+    fileObjs.forEach((fileObj) => {
+      expect(fileObj.isDirectory).toBeTruthy();
+    });
+
+    // isOnlyFile option
+    fileObjs = (await fsh.readdirRecursively(testDir, {
+      isOnlyFile: true,
+      withFileTypes: true,
+    })) as Array<fsh.FileInfo>;
+
+    expect(fileObjs).toHaveLength(allNoneDirNums);
+
+    fileObjs.forEach((fileObj) => {
+      expect(fileObj.isDirectory).toBeFalsy();
+    });
+
+    // excludesSymlink option
+    fileObjs = (await fsh.readdirRecursively(testDir, {
+      excludesSymlink: true,
+      withFileTypes: true,
+    })) as Array<fsh.FileInfo>;
+
+    fileObjs.forEach((fileObj) => {
+      expect(fileObj.isSymbolicLink).toBeFalsy();
+    });
+
+    // matchedRegExp
+    relPaths = (await fsh.readdirRecursively(testDir, {
+      matchedRegExp: '\\.txt$',
+    })) as Array<string>;
+
+    relPaths.forEach((relPath) => {
+      expect(relPath).toMatch(/\.txt$/i);
+    });
+
+    // ignoredRegExp
+    relPaths = (await fsh.readdirRecursively(testDir, {
+      ignoredRegExp: '\\.txt$',
+    })) as Array<string>;
+
+    relPaths.forEach((relPath) => {
+      expect(relPath).not.toMatch(/\.txt$/i);
+    });
+
+    // // Test throwing Errors
+    // [''].forEach(async (errVal) => {
+    //   await expect(fsh.readdirRecursively(errVal)).rejects.toThrow();
+    // });
+
+    rimraf.sync(testDir);
+
+    done();
   });
 });

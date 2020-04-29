@@ -10,7 +10,7 @@
       "request": "launch",
       "args": [
         // "--runInBand"
-        "-t writeAsTextSync"
+        "-t readdirRecursively"
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
@@ -25,8 +25,18 @@
       // "preLaunchTask": "tsc: build - tsconfig.json",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}\\dist\\bin\\index.js",
+      "program": "${workspaceFolder}/dist/bin/index.js",
       "args": ["detect-text-spec", "./assets/src-sjis-crlf.txt"]
+    },
+    {
+      "name": "Debug CLI ls",
+      "type": "node",
+      "request": "launch",
+      // "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/dist/bin/index.js",
+      "args": ["ls", "./assets"]
     }
   ]
 }

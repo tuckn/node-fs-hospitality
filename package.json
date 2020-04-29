@@ -3,7 +3,7 @@
   "description": "Extra methods for Node.js fs object. e.g. readAsText read a file with automatically detecting a character encoding. ",
   "version": "1.0.0",
   "author": "Tuckn <tuckn333+github@gmail.com>",
-  "private": true,
+  "private": false,
   "license": "MIT",
   "homepage": "https://docs.tuckn.net/node-fs-hospitality",
   "repository": {
@@ -44,7 +44,9 @@
     "build": "run-p build:*",
     "predocs": "npm run build || rimraf ./docs",
     "docs:common": "jsdoc --configure ./jsdoc.json",
-    "postdocs": "cpx ./scripts/jsdoc.css ./docs/styles/",
+    "cp-docs-css": "cpx ./scripts/jsdoc.css ./docs/styles/",
+    "cp-docs-img": "cpx ./assets/img ./docs/",
+    "postdocs": "run-p cp-docs-*",
     "docs": "run-s docs:*",
     "prepublishOnly": "npm run build"
   },
@@ -72,6 +74,7 @@
     "@types/encoding-japanese": "1.0.15",
     "@types/jest": "^25.2.1",
     "@types/lodash": "4.14.150",
+    "@types/rimraf": "^3.0.0",
     "@types/uuid": "7.0.2",
     "@typescript-eslint/eslint-plugin": "2.29.0",
     "@typescript-eslint/parser": "2.29.0",
