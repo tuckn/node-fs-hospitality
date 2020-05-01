@@ -42,7 +42,13 @@ module.exports = {
         tsx: 'never',
       },
     ],
-    'import/no-extraneous-dependencies': 'warn',
+    'import/no-extraneous-dependencies': [
+      'error',
+      {
+        devDependencies: ['**/*.test.ts'],
+        peerDependencies: false,
+      },
+    ],
     'import/default': 'warn',
     'import/order': 'off',
     'import/prefer-default-export': 'off',

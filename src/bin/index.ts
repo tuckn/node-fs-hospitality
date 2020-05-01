@@ -17,13 +17,35 @@ import * as fsh from '../lib/index';
 /**
  * @function ls
  * @memberof CLI
- * @param {string} dirPath - A directory-path
- * @param {object} [options]
- * @param {string} [options.type] - "-T" or "--type" and "all", "encoding", "eol"
- * @returns {string}
  * @example
-// Ex. on Windows
-> npx fs-hospitality ls "D:\Test" --type "encoding"
+Usage: npx fs-hospitality ls [options] <dirPath>
+ 
+Detecting a text specification.
+ 
+Options:
+  -V, --version                output the version number
+  -D, --is-only-dir            Exacting directories only
+  -F, --is-only-file           Exacting files only
+  -S, --excludes-symlink       Excluding symblic-links
+  -M, --matched-reg-exp <exp>  Ex. "\d+\.txt$"
+  -I, --ignored-reg-exp <exp>  Ex. "[_\-.]cache\d+"
+  -W, --with-file-types        Returns file info objects (like fs.Dirent)
+  -h, --help                   display help for command
+ 
+// Ex1. No options
+$ npx fs-hospitality ls "D:\Test"
+[
+  'DirFoo-Symlink',
+  'fileRoot2-Symlink.log',
+  'fileRoot2.log',
+  'FILE_ROOT1.TXT',
+  'DirFoo',
+  'DirBar',
+  'DirBar\\fileBar1.txt',
+  'DirBar\\DirQuux',
+  'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
+  'DirBar\\DirQuux\\fileQuux1.txt'
+]
  */
 program
   .command('ls <dirPath>')
@@ -32,7 +54,7 @@ program
   .option('-D, --is-only-dir', 'Exacting directories only')
   .option('-F, --is-only-file', 'Exacting files only')
   .option('-S, --excludes-symlink', 'Excluding symblic-links')
-  .option('-M, --matched-reg-exp <exp>', 'Ex. "\\d+\\.txt$"')
+  .option('-M, --matched-reg-exp <exp>', 'Ex. "\\.txt$"')
   .option('-I, --ignored-reg-exp <exp>', 'Ex. "[_\\-.]cache\\d+"')
   .option('-W, --with-file-types', 'Returns file info objects (fs.Dirent)')
   .action(async (dirPath, options) => {
@@ -46,15 +68,22 @@ program
 /**
  * @function detect-text-spec
  * @memberof CLI
- * @param {string} filePath - A file-path
- * @param {object} [options]
- * @param {string} [options.type] - "-T" or "--type" and "all", "encoding", "eol"
- * @returns {string}
  * @example
-// Ex. on Windows
-> npx fs-hospitality detect-text-spec "D:\Test\src.wsf" --type "encoding"
+npx fs-hospitality detect-text-spec [options] <filePath>
+ 
+Detecting a text specification.
+ 
+Options:
+  -V, --version      output the version number
+  -T, --type <name>  "all" | "encoding" | "eol"
+  -h, --help         display help for command
+ 
+// Ex1.
+$ npx fs-hospitality detect-text-spec "D:\Test\src.wsf" --type "encoding"
 SJIS
-> npx fs-hospitality detect-text-spec "D:\Test\src.wsf" --type "eol"
+ 
+// Ex2.
+$ npx fs-hospitality detect-text-spec "D:\Test\src.wsf" --type "eol"
 crlf
  */
 program
@@ -80,15 +109,20 @@ program
 /**
  * @function conv-text
  * @memberof CLI
- * @param {string} filePath - A source file-path
- * @param {string} [destPath] - A destination file-path
- * @param {object} [options]
- * @param {string} [options.trim] - "all" | "start" | "end"
- * @param {string} [options.eol] - "lf" | "cr" | "crlf" or "unix" | "mac" | "dos"
- * @param {string} [options.bom] - Add BOM. Only UTFx encoding
- * @returns {string}
  * @example
-// Ex. on Windows
+Usage: npx fs-hospitality conv-text [options] <filePath> [destPath]
+ 
+Converting a text encoding.
+ 
+Options:
+  -V, --version          output the version number
+  -T, --trim <type>      "all" | "start" | "end"
+  -E, --eol <type>       "lf" | "cr" | "crlf" or "unix" | "mac" | "dos"
+  -B, --bom              Add BOM. Only UTFx encoding
+  -e, --encoding <name>  "UTF-16BE", "Shift_JIS", ... "Default: "utf8" (default: "utf8")
+  -h, --help             display help for command
+ 
+// Ex1.
 > npx fs-hospitality conv-text "D:\Test\src.wsf" --trim "all" --eol "dos" --bom
  */
 program

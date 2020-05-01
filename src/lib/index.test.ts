@@ -5,15 +5,15 @@ import * as rimraf from 'rimraf';
 
 import * as fsh from './index';
 
-const dirSamples = path.resolve(__dirname, '../../assets');
-const fileNonText = path.join(dirSamples, 'src-bin.ico');
-const textSjisDos = path.join(dirSamples, 'src-sjis-crlf.txt');
-const textUtf16BeBomDos = path.join(dirSamples, 'src-utf16be-bom-crlf.txt');
-const textUtf16LeBomDos = path.join(dirSamples, 'src-utf16le-bom-crlf.txt');
-const textUtf16LeUnix = path.join(dirSamples, 'src-utf16le-lf.txt');
-const textUtf8BomDos = path.join(dirSamples, 'src-utf8-bom-crlf.txt');
-const textUtf8Unix = path.join(dirSamples, 'src-utf8-lf.txt');
-const textUtf8None = path.join(dirSamples, 'src-utf8-none.txt');
+const dirAssets = path.resolve(__dirname, '../../assets');
+const fileNonText = path.join(dirAssets, 'src-bin.ico');
+const textSjisDos = path.join(dirAssets, 'src-sjis-crlf.txt');
+const textUtf16BeBomDos = path.join(dirAssets, 'src-utf16be-bom-crlf.txt');
+const textUtf16LeBomDos = path.join(dirAssets, 'src-utf16le-bom-crlf.txt');
+const textUtf16LeUnix = path.join(dirAssets, 'src-utf16le-lf.txt');
+const textUtf8BomDos = path.join(dirAssets, 'src-utf8-bom-crlf.txt');
+const textUtf8Unix = path.join(dirAssets, 'src-utf8-lf.txt');
+const textUtf8None = path.join(dirAssets, 'src-utf8-none.txt');
 
 const TEST_WORDS_TOP = 'file: Mock file to test';
 const TEST_WORDS_STR = 'テスト用2バイト文字';
@@ -432,7 +432,7 @@ describe('fs-hospitality', () => {
 
   test('mklink', async (done) => {
     const pathPairs = [
-      { srcPath: dirSamples, destPath: fsh.makeTmpPath() },
+      { srcPath: dirAssets, destPath: fsh.makeTmpPath() },
       { srcPath: fileNonText, destPath: fsh.makeTmpPath() },
     ];
 
@@ -473,7 +473,7 @@ describe('fs-hospitality', () => {
 
   test('mklinkSync', () => {
     const pathPairs = [
-      { srcPath: dirSamples, destPath: fsh.makeTmpPath() },
+      { srcPath: dirAssets, destPath: fsh.makeTmpPath() },
       { srcPath: fileNonText, destPath: fsh.makeTmpPath() },
     ];
 
@@ -500,44 +500,43 @@ describe('fs-hospitality', () => {
     });
   });
 
-  test('readdirRecursively', async (done) => {
+  const createTestFiles = (dirTest: string): fsh.FileInfo[] => {
     /*
      * @note A structure to test
-%TEMP%test-readdirRecursively_xxxxx/
-│  FILE_ROOT1.TXT
-│  fileRoot2-Symlink.log
-│  fileRoot2.log
-│
-├─DirBar
-│  │  fileBar1.txt
-│  │
-│  └─DirQuux
-│          fileQuux1-Symlink.txt
-│          fileQuux1.txt
-│
-├─DirFoo
-└─DirFoo-Symlink
+      %TEMP%test-readdirRecursively_xxxxx/
+      │  FILE_ROOT1.TXT
+      │  fileRoot2-Symlink.log
+      │  fileRoot2.log
+      │
+      ├─DirBar
+      │  │  fileBar1.txt
+      │  │
+      │  └─DirQuux
+      │          fileQuux1-Symlink.txt
+      │          fileQuux1.txt
+      │
+      ├─DirFoo
+      └─DirFoo-Symlink
      */
     // The root files
-    const testDir = fsh.makeTmpPath('', 'test-readdirRecursively_');
-    const fileRoot1 = path.join(testDir, 'FILE_ROOT1.TXT');
-    const fileRoot2 = path.join(testDir, 'fileRoot2.log');
-    const fileRoot2Sym = path.join(testDir, 'fileRoot2-Symlink.log');
+    const fileRoot1 = path.join(dirTest, 'FILE_ROOT1.TXT');
+    const fileRoot2 = path.join(dirTest, 'fileRoot2.log');
+    const fileRoot2Sym = path.join(dirTest, 'fileRoot2-Symlink.log');
     // Create files
-    fs.mkdirSync(testDir);
+    fs.mkdirSync(dirTest);
     fs.writeFileSync(fileRoot1, 'fileRoot1');
     fs.writeFileSync(fileRoot2, 'fileRoot2');
     fsh.mklinkSync(fileRoot2, fileRoot2Sym);
 
     // The sub directory1 (DirFoo)
-    const dirFoo = path.join(testDir, 'DirFoo');
-    const dirFooSym = path.join(testDir, 'DirFoo-Symlink');
+    const dirFoo = path.join(dirTest, 'DirFoo');
+    const dirFooSym = path.join(dirTest, 'DirFoo-Symlink');
     // Create files
     fs.mkdirSync(dirFoo);
     fsh.mklinkSync(dirFoo, dirFooSym);
 
     // The sub directory2 (DriBar)
-    const dirBar = path.join(testDir, 'DirBar');
+    const dirBar = path.join(dirTest, 'DirBar');
     const fileBar1 = path.join(dirBar, 'fileBar1.txt');
     const dirQuux = path.join(dirBar, 'DirQuux');
     const fileQuux1 = path.join(dirQuux, 'fileQuux1.txt');
@@ -549,7 +548,7 @@ describe('fs-hospitality', () => {
     fs.writeFileSync(fileQuux1, 'fileQuux1');
     fsh.mklinkSync(fileQuux1, fileQuux1Sym);
 
-    const expectingFileObjs = [
+    const expectingFileObjs: fsh.FileInfo[] = [
       {
         name: 'DirFoo-Symlink',
         relPath: 'DirFoo-Symlink',
@@ -632,8 +631,15 @@ describe('fs-hospitality', () => {
       },
     ];
 
+    return expectingFileObjs;
+  };
+
+  test('readdirRecursively', async (done) => {
+    const dirTest = fsh.makeTmpPath('', 'test-readdirRecursively_');
+    const expectingFileObjs = createTestFiles(dirTest);
+
     // No options
-    const allRelPaths = (await fsh.readdirRecursively(testDir)) as Array<
+    const allRelPaths = (await fsh.readdirRecursively(dirTest)) as Array<
       string
     >;
 
@@ -644,7 +650,7 @@ describe('fs-hospitality', () => {
     });
 
     // The withFileTypes option
-    const allFileObjs = (await fsh.readdirRecursively(testDir, {
+    const allFileObjs = (await fsh.readdirRecursively(dirTest, {
       withFileTypes: true,
     })) as Array<fsh.FileInfo>;
 
@@ -661,7 +667,7 @@ describe('fs-hospitality', () => {
     let fileObjs: fsh.FileInfo[];
 
     // isOnlyDir option
-    fileObjs = (await fsh.readdirRecursively(testDir, {
+    fileObjs = (await fsh.readdirRecursively(dirTest, {
       isOnlyDir: true,
       withFileTypes: true,
     })) as Array<fsh.FileInfo>;
@@ -673,7 +679,7 @@ describe('fs-hospitality', () => {
     });
 
     // isOnlyFile option
-    fileObjs = (await fsh.readdirRecursively(testDir, {
+    fileObjs = (await fsh.readdirRecursively(dirTest, {
       isOnlyFile: true,
       withFileTypes: true,
     })) as Array<fsh.FileInfo>;
@@ -685,7 +691,7 @@ describe('fs-hospitality', () => {
     });
 
     // excludesSymlink option
-    fileObjs = (await fsh.readdirRecursively(testDir, {
+    fileObjs = (await fsh.readdirRecursively(dirTest, {
       excludesSymlink: true,
       withFileTypes: true,
     })) as Array<fsh.FileInfo>;
@@ -695,7 +701,7 @@ describe('fs-hospitality', () => {
     });
 
     // matchedRegExp
-    relPaths = (await fsh.readdirRecursively(testDir, {
+    relPaths = (await fsh.readdirRecursively(dirTest, {
       matchedRegExp: '\\.txt$',
     })) as Array<string>;
 
@@ -704,7 +710,7 @@ describe('fs-hospitality', () => {
     });
 
     // ignoredRegExp
-    relPaths = (await fsh.readdirRecursively(testDir, {
+    relPaths = (await fsh.readdirRecursively(dirTest, {
       ignoredRegExp: '\\.txt$',
     })) as Array<string>;
 
@@ -717,8 +723,93 @@ describe('fs-hospitality', () => {
     //   await expect(fsh.readdirRecursively(errVal)).rejects.toThrow();
     // });
 
-    rimraf.sync(testDir);
+    rimraf.sync(dirTest);
 
     done();
+  });
+
+  test('readdirRecursivelySync', () => {
+    const dirTest = fsh.makeTmpPath('', 'test-readdirRecursivelySync_');
+    const expectingFileObjs = createTestFiles(dirTest);
+
+    // No options
+    const allRelPaths = fsh.readdirRecursivelySync(dirTest) as Array<string>;
+
+    expect(allRelPaths).toHaveLength(expectingFileObjs.length);
+
+    expectingFileObjs.forEach((expectObj) => {
+      expect(allRelPaths).toEqual(expect.arrayContaining([expectObj.relPath]));
+    });
+
+    // The withFileTypes option
+    const allFileObjs = fsh.readdirRecursivelySync(dirTest, {
+      withFileTypes: true,
+    }) as Array<fsh.FileInfo>;
+
+    expect(allFileObjs).toHaveLength(expectingFileObjs.length);
+
+    allFileObjs.forEach((fileObj) => {
+      expect(expectingFileObjs).toEqual(expect.arrayContaining([fileObj]));
+    });
+
+    const allFileNums = allRelPaths.length;
+    const allDirNums = allFileObjs.filter((obj) => obj.isDirectory).length;
+    const allNoneDirNums = allFileNums - allDirNums;
+    let relPaths: string[];
+    let fileObjs: fsh.FileInfo[];
+
+    // isOnlyDir option
+    fileObjs = fsh.readdirRecursivelySync(dirTest, {
+      isOnlyDir: true,
+      withFileTypes: true,
+    }) as Array<fsh.FileInfo>;
+
+    expect(fileObjs).toHaveLength(allDirNums);
+
+    fileObjs.forEach((fileObj) => {
+      expect(fileObj.isDirectory).toBeTruthy();
+    });
+
+    // isOnlyFile option
+    fileObjs = fsh.readdirRecursivelySync(dirTest, {
+      isOnlyFile: true,
+      withFileTypes: true,
+    }) as Array<fsh.FileInfo>;
+
+    expect(fileObjs).toHaveLength(allNoneDirNums);
+
+    fileObjs.forEach((fileObj) => {
+      expect(fileObj.isDirectory).toBeFalsy();
+    });
+
+    // excludesSymlink option
+    fileObjs = fsh.readdirRecursivelySync(dirTest, {
+      excludesSymlink: true,
+      withFileTypes: true,
+    }) as Array<fsh.FileInfo>;
+
+    fileObjs.forEach((fileObj) => {
+      expect(fileObj.isSymbolicLink).toBeFalsy();
+    });
+
+    // matchedRegExp
+    relPaths = fsh.readdirRecursivelySync(dirTest, {
+      matchedRegExp: '\\.txt$',
+    }) as Array<string>;
+
+    relPaths.forEach((relPath) => {
+      expect(relPath).toMatch(/\.txt$/i);
+    });
+
+    // ignoredRegExp
+    relPaths = fsh.readdirRecursivelySync(dirTest, {
+      ignoredRegExp: '\\.txt$',
+    }) as Array<string>;
+
+    relPaths.forEach((relPath) => {
+      expect(relPath).not.toMatch(/\.txt$/i);
+    });
+
+    rimraf.sync(dirTest);
   });
 });

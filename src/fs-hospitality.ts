@@ -133,12 +133,38 @@ export function detectTextEol(textData: Buffer | string): string {
 }
 
 /**
+ * fs.readFile Promisification
+ *
+ * @memberof API
+ * @param {string} filePath - A Filename
+ * @param {object} [options] - See {@link https://nodejs.org/api/fs.html#fs_fs_readfile_path_options_callback|Node.js fs.readFile}
+ * @returns {Promise<Buffer|string>} -
+ * @example
+  const { readFilePromise } = require('@tuckn/fs-hospitality');
+ 
+  // All arguments are same with fs.readFile
+  const data = await readFilePromise('D:\\Test\\myData.dat');
+  console.log(data);
+ */
+export function readFilePromise(
+  filePath: Buffer | string,
+  options = {},
+): Promise<Buffer | string> {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, options, (err, data) => {
+      if (err) return reject(err);
+      return resolve(data);
+    });
+  });
+}
+
+/**
  * Reads a Buffer or a file-path as text and encodes it into a String.
  *
  * @memberof API
  * @param {(Buffer|string)} textFile - Buffer or file-path
  * @param {string} [encoding=''] - If empty, auto-detecting
- * @returns {Promise<string>} - { resolve:string, reject:Error }
+ * @returns {Promise<string>} -
  * @example
   const { readAsText } = require('@tuckn/fs-hospitality');
  
@@ -159,7 +185,7 @@ export function detectTextEol(textData: Buffer | string): string {
     // Returns String parsed with UTF-16LE
   });
  */
-export function readAsText(
+export async function readAsText(
   textFile: Buffer | string,
   encoding = '',
 ): Promise<string> {
@@ -169,51 +195,38 @@ export function readAsText(
     );
   }
 
-  return new Promise((resolve, reject) => {
-    // Buffer
-    if (Buffer.isBuffer(textFile)) {
-      try {
-        return resolve(decodeTextBuffer(textFile, encoding));
-      } catch (e) {
-        return reject(e);
-      }
-    }
+  // Buffer
+  if (Buffer.isBuffer(textFile)) {
+    return decodeTextBuffer(textFile, encoding);
+  }
 
-    // String (A file-path)
-    const filePath = path.resolve(textFile);
+  // String (A file-path)
+  const filePath = path.resolve(textFile);
+  const data = (await readFilePromise(filePath)) as Buffer;
 
-    return fs.readFile(filePath, (err, data) => {
-      if (err) return reject(err);
-
-      try {
-        // if (encoding === 'binary') return resolve(data);
-        // @todo When enc is 'binary'
-        return resolve(decodeTextBuffer(data, encoding));
-      } catch (e) {
-        return reject(e);
-      }
-    });
-  });
+  // if (encoding === 'binary') return resolve(data);
+  // @todo When enc is 'binary'
+  return decodeTextBuffer(data, encoding);
 }
 
 /**
  * The synchronous version of this API: readAsText().
  *
  * @memberof API
- * @param {(Buffer|string)} textFile - A Buffer or a file-path
- * @param {string} [encoding=''] - If empty, auto-detecting
- * @returns {string} - The entire contents as String
+ * @returns {string} -
  * @example
-  const { readAsTextSync } = require('@tuckn/fs-hospitality');
- 
-  // Ex.1 From the file-path
-  const textString = readAsTextSync('D:\\Test\\MyNoteSJIS.txt');
-  // Returns String parsed with Shift_JIS
- 
-  // Ex.2 From the Buffer
-  const buf = fs.readFile('D:\\Test\\Utf16LE.log');
-  const textString2 = readAsTextSync(buf);
-  // Returns String parsed with UTF-16LE
+ * const { readAsTextSync } = require('@tuckn/fs-hospitality');
+ *
+ * // Ex.1 From the file-path
+ * const textString = readAsTextSync('D:\\Test\\MyNoteSJIS.txt');
+ * // Returns String parsed with Shift_JIS
+ *
+ * // Ex.2 From the Buffer
+ * const buf = fs.readFile('D:\\Test\\Utf16LE.log');
+ * const textString2 = readAsTextSync(buf);
+ * // Returns String parsed with UTF-16LE
+ * @param textFile
+ * @param encoding
  */
 export function readAsTextSync(
   textFile: string | Buffer,
@@ -478,23 +491,23 @@ export function writeAsText(
  * The synchronous version of this API: writeAsText().
  *
  * @memberof API
- * @param {string} destPath - A destination file-path
- * @param {string} [strData=''] - A string of data to write
- * @param {PrewriteAsTextOptions} [options]
  * @returns {void}
  * @example
-  const { writeAsText } = require('@tuckn/fs-hospitality');
-  const vbsFile = 'D:\\Test\\utf8bom.vbs';
-  const strData = 'Dim str As String  \n  str = "hoge"\n  WScript.Echo str';
- 
-  writeAsText(vbsFile, strData, {
-    trim: 'all',
-    eol: 'crlf',
-    bom: true,
-    encoding: 'UTF-8',
-  }).then(() => {
-    console.log('Writing successful');
-  });
+ * const { writeAsText } = require('@tuckn/fs-hospitality');
+ * const vbsFile = 'D:\\Test\\utf8bom.vbs';
+ * const strData = 'Dim str As String  \n  str = "hoge"\n  WScript.Echo str';
+ *
+ * writeAsText(vbsFile, strData, {
+ * trim: 'all',
+ * eol: 'crlf',
+ * bom: true,
+ * encoding: 'UTF-8',
+ * }).then(() => {
+ * console.log('Writing successful');
+ * });
+ * @param destPath
+ * @param strData
+ * @param options
  */
 export function writeAsTextSync(
   destPath: string,
@@ -637,23 +650,17 @@ export function mklinkSync(
 }
 
 /**
- * Promise fs.readdir. @link {https://nodejs.org/dist/latest-v12.x/docs/api/fs.html#fs_fs_promises_api|Node.js fsPromises}
+ * fs.readdir Promisification. {@link https://nodejs.org/api/fs.html#fs_fs_readdir_path_options_callback|Node.js fs.readdir}
  *
  * @memberof API
  * @param {string} dirPath - A directory path
  * @param {object} [options] - See {@link https://nodejs.org/api/fs.html#fs_fs_readdir_path_options_callback|Node.js fs.readdir}
- * @param {boolean} [options.withFileTypes=false] - If set to true, returns array of fs.Dirent objects
  * @returns {Promise<string[]|Buffer[]|fs.Dirent[]>} - Returns array of fs.Dirent
  */
-export function fsPromiseReaddir(
+export function readdirPromise(
   dirPath: string,
   options = {},
 ): Promise<string[] | Buffer[] | fs.Dirent[]> {
-  if (!dirPath) {
-    throw new Error(`${ARG_ERR}dirPath is empty.${_errLoc(Function)}`);
-  }
-
-  // Get the top file paths
   return new Promise((resolve, reject) => {
     fs.readdir(dirPath, options, (err, files) => {
       if (err) return reject(err);
@@ -736,7 +743,7 @@ function sortFileInfo(a: FileInfo, b: FileInfo): 0 | 1 | -1 {
   // └─DirFoo-Symlink
  
   readdirRecursively('D:\\Test').then((files) => {
-    console.log(files);
+    console.dir(files);
     // Returns [
     //   'DirFoo-Symlink',
     //   'fileRoot2-Symlink.log',
@@ -750,7 +757,7 @@ function sortFileInfo(a: FileInfo, b: FileInfo): 0 | 1 | -1 {
     //   'DirBar\\DirQuux\\fileQuux1.txt' ]
  
   readdirRecursively('D:\\Test', { withFileTypes: true }).then((files) => {
-    console.log(files);
+    console.dir(files);
     // Returns [
     //   {
     //     name: 'DirFoo-Symlink',
@@ -840,7 +847,7 @@ export async function readdirRecursively(
   options = {},
 ): Promise<string[] | FileInfo[]> {
   // Get the all of top files
-  const dirents = (await fsPromiseReaddir(dirPath, {
+  const dirents = (await readdirPromise(dirPath, {
     withFileTypes: true,
   })) as Array<fs.Dirent>;
 
@@ -918,6 +925,144 @@ export async function readdirRecursively(
       if (subDir.length > 0) dirsBranches = dirsBranches.concat(subDir);
     }),
   );
+
+  // Join
+  let rtnFilesInfo: FileInfo[] = [];
+  if (files.length > 0) rtnFilesInfo = rtnFilesInfo.concat(files);
+  if (dirsBranches.length > 0) rtnFilesInfo = rtnFilesInfo.concat(dirsBranches);
+
+  // @todo
+  // Sort
+  // files.sort(sortFileInfo);
+
+  const withFileTypes = obtain(options, 'withFileTypes', false);
+  if (!withFileTypes) {
+    return rtnFilesInfo.map((file) => file.relPath);
+  }
+
+  return rtnFilesInfo;
+}
+
+/**
+ * The synchronous version of this API: readdirRecursivelySync().
+ *
+ * @memberof API
+ * @returns {string[]|FileInfo[]} -
+ * @example
+ * const { readdirRecursivelySync } = require('@tuckn/fs-hospitality');
+ *
+ * // D:\Test\
+ * // │  FILE_ROOT1.TXT
+ * // │  fileRoot2-Symlink.log
+ * // │  fileRoot2.log
+ * // │
+ * // ├─DirBar
+ * // │  │  fileBar1.txt
+ * // │  │
+ * // │  └─DirQuux
+ * // │          fileQuux1-Symlink.txt
+ * // │          fileQuux1.txt
+ * // │
+ * // ├─DirFoo
+ * // └─DirFoo-Symlink
+ *
+ * const files = readdirRecursivelySync('D:\\Test');
+ * console.dir(files);
+ * // Returns [
+ * //   'DirFoo-Symlink',
+ * //   'fileRoot2-Symlink.log',
+ * //   'fileRoot2.log',
+ * //   'FILE_ROOT1.TXT',
+ * //   'DirFoo',
+ * //   'DirBar',
+ * //   'DirBar\\fileBar1.txt',
+ * //   'DirBar\\DirQuux',
+ * //   'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
+ * //   'DirBar\\DirQuux\\fileQuux1.txt' ]
+ * @param dirPath
+ * @param options
+ */
+export function readdirRecursivelySync(
+  dirPath: string,
+  options = {},
+): string[] | FileInfo[] {
+  // Get the all of top files
+  const dirents = fs.readdirSync(dirPath, {
+    withFileTypes: true,
+  });
+
+  // Filtering Options
+  const isOnlyFile = obtain(options, 'isOnlyFile', false);
+  const isOnlyDir = obtain(options, 'isOnlyDir', false);
+  const excludesSymlink = obtain(options, 'excludesSymlink', false);
+
+  const matchedRegExp = obtain(options, 'matchedRegExp', null);
+  const mtchRE = matchedRegExp ? new RegExp(matchedRegExp, 'i') : null;
+
+  const ignoredRegExp = obtain(options, 'ignoredRegExp', null);
+  const ignrRE = ignoredRegExp ? new RegExp(ignoredRegExp, 'i') : null;
+
+  const _prefixDirName = obtain(options, '_prefixDirName', '');
+
+  // let files: string[] | FileInfo[] = [];
+  const files: FileInfo[] = [];
+  const dirs: FileInfo[] = [];
+
+  dirents.forEach((dirent) => {
+    const relPath = path.join(_prefixDirName, dirent.name);
+
+    if (!dirent.isDirectory()) {
+      // Filtering
+      if (isOnlyDir) return;
+      if (excludesSymlink && dirent.isSymbolicLink()) return;
+      if (mtchRE && !mtchRE.test(relPath)) return;
+      if (ignrRE && ignrRE.test(relPath)) return;
+
+      files.push({
+        name: dirent.name,
+        relPath,
+        path: path.resolve(dirPath, dirent.name),
+        isDirectory: false,
+        isFile: dirent.isFile(),
+        isSymbolicLink: dirent.isSymbolicLink(),
+      });
+    } else {
+      // @note
+      // The dires will be filterd after getting subdirectory information
+      dirs.push({
+        name: dirent.name,
+        relPath,
+        path: path.resolve(dirPath, dirent.name),
+        isDirectory: true,
+        isFile: false,
+        isSymbolicLink: dirent.isSymbolicLink(),
+      });
+    }
+  });
+
+  // Get the all of sub directoies files recursively
+  // let dirsBranches: string[] | FileInfo[] = [];
+  let dirsBranches: FileInfo[] = [];
+
+  dirs.forEach((dir) => {
+    const subDir = readdirRecursivelySync(dir.path, {
+      ...options,
+      withFileTypes: true,
+      _prefixDirName: dir.relPath,
+    }) as Array<FileInfo>;
+
+    // Filtering the top directory
+    if (
+      !isOnlyFile &&
+      !(excludesSymlink && dir.isSymbolicLink) &&
+      (!mtchRE || (mtchRE && mtchRE.test(dir.relPath))) &&
+      !(ignrRE && ignrRE.test(dir.relPath))
+    ) {
+      dirsBranches = dirsBranches.concat(dir);
+    }
+
+    if (subDir.length > 0) dirsBranches = dirsBranches.concat(subDir);
+  });
 
   // Join
   let rtnFilesInfo: FileInfo[] = [];

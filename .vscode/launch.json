@@ -5,36 +5,32 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "vscode-jest-tests",
+      "name": "Jest",
       "type": "node",
       "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest",
       "args": [
-        // "--runInBand"
-        "-t readdirRecursively"
+        "--config",
+        "${workspaceFolder}/jest.config.js",
+        "--runInBand",
+        "--no-cache",
+        "--testNamePattern",
+        "readdirRecursively"
       ],
-      "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "disableOptimisticBPs": true,
-      "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+      "internalConsoleOptions": "neverOpen"
     },
     {
-      "name": "Launch Program",
+      "name": "CLI",
       "type": "node",
       "request": "launch",
-      // "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/dist/bin/index.js",
-      "args": ["detect-text-spec", "./assets/src-sjis-crlf.txt"]
-    },
-    {
-      "name": "Debug CLI ls",
-      "type": "node",
-      "request": "launch",
-      // "preLaunchTask": "tsc: build - tsconfig.json",
+      "sourceMaps": true,
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/dist/bin/index.js",
       "args": ["ls", "./assets"]
     }

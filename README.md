@@ -77,23 +77,29 @@ fsh.writeAsTextSync('D:\\Test\\utf8bom.wsf', vbsCode, {}).then(() => {
 
 ### Recursively Read Directory
 
+The sample of files structure
+
+```console
+D:\Test\
+│  FILE_ROOT1.TXT
+│  fileRoot2-Symlink.log
+│  fileRoot2.log
+│
+├─DirBar
+│  │  fileBar1.txt
+│  │
+│  └─DirQuux
+│          fileQuux1-Symlink.txt
+│          fileQuux1.txt
+│
+├─DirFoo
+└─DirFoo-Symlink
+```
+
+Asynchronous
+
 ```js
 const fsh = require('@tuckn/fs-hospitality');
-
-// D:\Test\
-// │  FILE_ROOT1.TXT
-// │  fileRoot2-Symlink.log
-// │  fileRoot2.log
-// │
-// ├─DirBar
-// │  │  fileBar1.txt
-// │  │
-// │  └─DirQuux
-// │          fileQuux1-Symlink.txt
-// │          fileQuux1.txt
-// │
-// ├─DirFoo
-// └─DirFoo-Symlink
 
 fsh.readdirRecursively('D:\\Test').then((files) => {
   console.log(files);
@@ -111,18 +117,30 @@ fsh.readdirRecursively('D:\\Test').then((files) => {
 });
 ```
 
-Use `withFileTypes` option
+Synchronous
 
 ```js
 const fsh = require('@tuckn/fs-hospitality');
 
-// D:\Test\
-// │  FILE_ROOT1.TXT
-// │  fileRoot2-Symlink.log
-// │  fileRoot2.log
-// │
-// └─DirBar
-//         fileBar1.txt
+const files = fsh.readdirRecursivelySync('D:\\Test');
+console.log(files);
+// Returns [
+//   'DirFoo-Symlink',
+//   'fileRoot2-Symlink.log',
+//   'fileRoot2.log',
+//   'FILE_ROOT1.TXT',
+//   'DirFoo',
+//   'DirBar',
+//   'DirBar\\fileBar1.txt',
+//   'DirBar\\DirQuux',
+//   'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
+//   'DirBar\\DirQuux\\fileQuux1.txt' ]
+```
+
+Use `withFileTypes` option
+
+```js
+const fsh = require('@tuckn/fs-hospitality');
 
 readdirRecursively('D:\\Test', { withFileTypes: true }).then((files) => {
   console.log(files);
@@ -151,6 +169,7 @@ readdirRecursively('D:\\Test', { withFileTypes: true }).then((files) => {
   //     isFile: true,
   //     isSymbolicLink: false
   //   },
+  //   ...
   //   {
   //     name: 'DirBar',
   //     relPath: 'DirBar',
@@ -227,6 +246,42 @@ console.log(tmpStr === readData); // true
 ```
 
 ## CLI
+
+### ls
+
+```console
+$ fs-hospitality ls [options] <dirPath>
+
+Detecting a text specification.
+
+Options:
+  -V, --version                output the version number
+  -D, --is-only-dir            Exacting directories only
+  -F, --is-only-file           Exacting files only
+  -S, --excludes-symlink       Excluding symblic-links
+  -M, --matched-reg-exp <exp>  Ex. "\d+\.txt$"
+  -I, --ignored-reg-exp <exp>  Ex. "[_\-.]cache\d+"
+  -W, --with-file-types        Returns file info objects (fs.Dirent)
+  -h, --help                   display help for command
+```
+
+Below are examples on Windows.
+
+```console
+> fs-hospitality ls "D:\Test"
+[
+  'DirFoo-Symlink',
+  'fileRoot2-Symlink.log',
+  'fileRoot2.log',
+  'FILE_ROOT1.TXT',
+  'DirFoo',
+  'DirBar',
+  'DirBar\\fileBar1.txt',
+  'DirBar\\DirQuux',
+  'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
+  'DirBar\\DirQuux\\fileQuux1.txt'
+]
+```
 
 ### detect-text-spec
 
