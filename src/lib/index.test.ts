@@ -213,10 +213,10 @@ describe('fs-hospitality', () => {
         end: '  foo\r\n  bar\r\n baz',
       },
       {
-        str: 'Hoge\r\nFuga\r\nPiyo',
-        all: 'Hoge\r\nFuga\r\nPiyo',
-        start: 'Hoge\r\nFuga\r\nPiyo',
-        end: 'Hoge\r\nFuga\r\nPiyo',
+        str: 'Foo\r\nBar\r\nBaz',
+        all: 'Foo\r\nBar\r\nBaz',
+        start: 'Foo\r\nBar\r\nBaz',
+        end: 'Foo\r\nBar\r\nBaz',
       },
     ];
 
@@ -709,9 +709,25 @@ describe('fs-hospitality', () => {
       expect(relPath).toMatch(/\.txt$/i);
     });
 
+    relPaths = (await fsh.readdirRecursively(dirTest, {
+      matchedRegExp: /\.log$/i,
+    })) as Array<string>;
+
+    relPaths.forEach((relPath) => {
+      expect(relPath).toMatch(/\.log$/i);
+    });
+
     // ignoredRegExp
     relPaths = (await fsh.readdirRecursively(dirTest, {
       ignoredRegExp: '\\.txt$',
+    })) as Array<string>;
+
+    relPaths.forEach((relPath) => {
+      expect(relPath).not.toMatch(/\.txt$/i);
+    });
+
+    relPaths = (await fsh.readdirRecursively(dirTest, {
+      ignoredRegExp: /\.txt$/i,
     })) as Array<string>;
 
     relPaths.forEach((relPath) => {

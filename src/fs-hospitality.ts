@@ -3,7 +3,7 @@ import { exec, execSync } from 'child_process';
 import * as encodingJp from 'encoding-japanese';
 import * as fs from 'fs';
 import * as iconv from 'iconv-lite';
-import { get as obtain, isString } from 'lodash';
+import * as _ from 'lodash';
 import * as os from 'os';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -84,14 +84,14 @@ export function detectTextEncoding(textData: Buffer | string): string {
  *
  * @memberof API
  * @param {Buffer} textBuf - A Buffer of text
- * @param {string} [encoding=''] - A specifing encoding. falsy to auto
+ * @param {string} [encoding=''] - A specifying encoding. falsy to auto
  * @returns {string} - A encoded string
  * @example
   const { decodeTextBuffer } = require('@tuckn/fs-hospitality');
  
   const textBuf = fs.readFileSync('D:\\Test\\SjisCRLF.txt');
   const text = decodeTextBuffer(textBuf);
-  // Returns: 'これはshft-JISで書かれたファイルです。'
+  // Returns: 'これはshift-JISで書かれたファイルです。'
  */
 export function decodeTextBuffer(textBuf: Buffer, encoding = ''): string {
   let enc = encoding;
@@ -123,7 +123,7 @@ export function detectTextEol(textData: Buffer | string): string {
     throw new Error(`${ARG_ERR}textData is empty.${_errLoc(Function)}`);
   }
 
-  if (isString(text)) {
+  if (_.isString(text)) {
     if (/\r\n/.test(text)) return 'crlf';
     if (/\r/.test(text)) return 'cr';
     if (/\n/.test(text)) return 'lf';
@@ -213,6 +213,8 @@ export async function readAsText(
  * The synchronous version of this API: readAsText().
  *
  * @memberof API
+ * @param {(Buffer|string)} textFile - Buffer or file-path
+ * @param {string} [encoding=''] - If empty, auto-detecting
  * @returns {string} -
  * @example
  * const { readAsTextSync } = require('@tuckn/fs-hospitality');
@@ -225,8 +227,6 @@ export async function readAsText(
  * const buf = fs.readFile('D:\\Test\\Utf16LE.log');
  * const textString2 = readAsTextSync(buf);
  * // Returns String parsed with UTF-16LE
- * @param textFile
- * @param encoding
  */
 export function readAsTextSync(
   textFile: string | Buffer,
@@ -298,7 +298,7 @@ export function convertEOL(strData: string, eol = ''): string {
   const fs = require('fs');
   if (fs.existsSync(tmpPath1)) throw new Error('Oops!');
  
-  // Makes on the current working direcotry
+  // Makes on the current working directory
   const tmpPath2 = makeTmpPath('.');
   // Returns: 'D:\test\2a5d35c8-7214-4ec7-a41d-a371b19273e7'
  
@@ -420,12 +420,12 @@ function _prewriteAsText(
 ): string {
   let writtenData = strData;
 
-  const trimOpt = obtain(options, 'trim', undefined);
+  const trimOpt = _.get(options, 'trim', undefined);
   if (trimOpt) {
     writtenData = trimAllLines(writtenData, trimOpt);
   }
 
-  const eol = obtain(options, 'eol', null);
+  const eol = _.get(options, 'eol', null);
   if (eol) writtenData = convertEOL(writtenData, eol);
 
   return writtenData;
@@ -442,7 +442,7 @@ function _prewriteAsText(
  * @example
   const { writeAsText } = require('@tuckn/fs-hospitality');
   const vbsFile = 'D:\\Test\\utf8bom.vbs';
-  const strData = 'Dim str As String  \n  str = "hoge"\n  WScript.Echo str';
+  const strData = 'Dim str As String  \n  str = "foo"\n  WScript.Echo str';
  
   writeAsText(vbsFile, strData, {
     trim: 'all',
@@ -468,9 +468,9 @@ export function writeAsText(
   const writtenData = _prewriteAsText(strData, options);
 
   let addBOM = { addBOM: false };
-  if (obtain(options, 'bom', false)) addBOM = { addBOM: true };
+  if (_.get(options, 'bom', false)) addBOM = { addBOM: true };
 
-  const encoding = obtain(options, 'encoding', 'utf8');
+  const encoding = _.get(options, 'encoding', 'utf8');
 
   return new Promise((resolve, reject) => {
     fs.writeFile(
@@ -491,11 +491,14 @@ export function writeAsText(
  * The synchronous version of this API: writeAsText().
  *
  * @memberof API
+ * @param {string} destPath - A destination file-path
+ * @param {string} [strData=''] - A string of data to write
+ * @param {object} options - See {@link API.writeAsText}
  * @returns {void}
  * @example
  * const { writeAsText } = require('@tuckn/fs-hospitality');
  * const vbsFile = 'D:\\Test\\utf8bom.vbs';
- * const strData = 'Dim str As String  \n  str = "hoge"\n  WScript.Echo str';
+ * const strData = 'Dim str As String  \n  str = "foo"\n  WScript.Echo str';
  *
  * writeAsText(vbsFile, strData, {
  * trim: 'all',
@@ -505,9 +508,6 @@ export function writeAsText(
  * }).then(() => {
  * console.log('Writing successful');
  * });
- * @param destPath
- * @param strData
- * @param options
  */
 export function writeAsTextSync(
   destPath: string,
@@ -522,9 +522,9 @@ export function writeAsTextSync(
   const writtenData = _prewriteAsText(strData, options);
 
   let addBOM = { addBOM: false };
-  if (obtain(options, 'bom', false)) addBOM = { addBOM: true };
+  if (_.get(options, 'bom', false)) addBOM = { addBOM: true };
 
-  const encoding = obtain(options, 'encoding', 'utf8');
+  const encoding = _.get(options, 'encoding', 'utf8');
 
   return fs.writeFileSync(
     filePath,
@@ -583,7 +583,7 @@ export async function mklink(
       } else {
         return reject(
           new Error(
-            `${ARG_ERR}${newPath} is not the file or direcotry.${_errLoc(
+            `${ARG_ERR}${newPath} is not the file or directory.${_errLoc(
               Function,
             )}`,
           ),
@@ -719,8 +719,8 @@ function sortFileInfo(a: FileInfo, b: FileInfo): 0 | 1 | -1 {
  * @param {boolean} [options.isOnlyDir=false] - Exacting directories only
  * @param {boolean} [options.isOnlyFile=false] - Exacting files only
  * @param {boolean} [options.excludesSymlink=false] - Excluding symbolic-links
- * @param {string} [options.matchedRegExp] - Ex. "\\d+\\.txt$"
- * @param {string} [options.ignoredRegExp] - Ex. "[_\\-.]cache\\d+"
+ * @param {string|RegExp} [options.matchedRegExp] - Ex. "\\d+\\.txt$"
+ * @param {string|RegExp} [options.ignoredRegExp] - Ex. "[_\\-.]cache\\d+"
  * @param {boolean} [options.withFileTypes=false] - If true, return fs.Dirent[]
  * @param {string} [options._prefixDirName] - @private The internal option
  * @returns {Promise<string[]|FileInfo[]>} - { resolve:string, reject:Error }
@@ -852,17 +852,31 @@ export async function readdirRecursively(
   })) as Array<fs.Dirent>;
 
   // Filtering Options
-  const isOnlyFile = obtain(options, 'isOnlyFile', false);
-  const isOnlyDir = obtain(options, 'isOnlyDir', false);
-  const excludesSymlink = obtain(options, 'excludesSymlink', false);
+  const isOnlyFile = _.get(options, 'isOnlyFile', false);
+  const isOnlyDir = _.get(options, 'isOnlyDir', false);
+  const excludesSymlink = _.get(options, 'excludesSymlink', false);
 
-  const matchedRegExp = obtain(options, 'matchedRegExp', null);
-  const mtchRE = matchedRegExp ? new RegExp(matchedRegExp, 'i') : null;
+  const matchedRegExp = _.get(options, 'matchedRegExp', null);
+  let mtchRE: RegExp | null = null;
+  if (matchedRegExp) {
+    if (_.isRegExp(matchedRegExp)) {
+      mtchRE = matchedRegExp;
+    } else {
+      mtchRE = new RegExp(matchedRegExp, 'i');
+    }
+  }
 
-  const ignoredRegExp = obtain(options, 'ignoredRegExp', null);
-  const ignrRE = ignoredRegExp ? new RegExp(ignoredRegExp, 'i') : null;
+  const ignoredRegExp = _.get(options, 'ignoredRegExp', null);
+  let ignrRE: RegExp | null = null;
+  if (ignoredRegExp) {
+    if (_.isRegExp(ignoredRegExp)) {
+      ignrRE = ignoredRegExp;
+    } else {
+      ignrRE = new RegExp(ignoredRegExp, 'i');
+    }
+  }
 
-  const _prefixDirName = obtain(options, '_prefixDirName', '');
+  const _prefixDirName = _.get(options, '_prefixDirName', '');
 
   // let files: string[] | FileInfo[] = [];
   const files: FileInfo[] = [];
@@ -935,7 +949,7 @@ export async function readdirRecursively(
   // Sort
   // files.sort(sortFileInfo);
 
-  const withFileTypes = obtain(options, 'withFileTypes', false);
+  const withFileTypes = _.get(options, 'withFileTypes', false);
   if (!withFileTypes) {
     return rtnFilesInfo.map((file) => file.relPath);
   }
@@ -947,6 +961,8 @@ export async function readdirRecursively(
  * The synchronous version of this API: readdirRecursivelySync().
  *
  * @memberof API
+ * @param {string} dirPath - A directory path
+ * @param {object} options - See {@link API.readdirRecursively}
  * @returns {string[]|FileInfo[]} -
  * @example
  * const { readdirRecursivelySync } = require('@tuckn/fs-hospitality');
@@ -979,8 +995,6 @@ export async function readdirRecursively(
  * //   'DirBar\\DirQuux',
  * //   'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
  * //   'DirBar\\DirQuux\\fileQuux1.txt' ]
- * @param dirPath
- * @param options
  */
 export function readdirRecursivelySync(
   dirPath: string,
@@ -992,17 +1006,31 @@ export function readdirRecursivelySync(
   });
 
   // Filtering Options
-  const isOnlyFile = obtain(options, 'isOnlyFile', false);
-  const isOnlyDir = obtain(options, 'isOnlyDir', false);
-  const excludesSymlink = obtain(options, 'excludesSymlink', false);
+  const isOnlyFile = _.get(options, 'isOnlyFile', false);
+  const isOnlyDir = _.get(options, 'isOnlyDir', false);
+  const excludesSymlink = _.get(options, 'excludesSymlink', false);
 
-  const matchedRegExp = obtain(options, 'matchedRegExp', null);
-  const mtchRE = matchedRegExp ? new RegExp(matchedRegExp, 'i') : null;
+  const matchedRegExp = _.get(options, 'matchedRegExp', null);
+  let mtchRE: RegExp | null = null;
+  if (matchedRegExp) {
+    if (_.isRegExp(matchedRegExp)) {
+      mtchRE = matchedRegExp;
+    } else {
+      mtchRE = new RegExp(matchedRegExp, 'i');
+    }
+  }
 
-  const ignoredRegExp = obtain(options, 'ignoredRegExp', null);
-  const ignrRE = ignoredRegExp ? new RegExp(ignoredRegExp, 'i') : null;
+  const ignoredRegExp = _.get(options, 'ignoredRegExp', null);
+  let ignrRE: RegExp | null = null;
+  if (ignoredRegExp) {
+    if (_.isRegExp(ignoredRegExp)) {
+      ignrRE = ignoredRegExp;
+    } else {
+      ignrRE = new RegExp(ignoredRegExp, 'i');
+    }
+  }
 
-  const _prefixDirName = obtain(options, '_prefixDirName', '');
+  const _prefixDirName = _.get(options, '_prefixDirName', '');
 
   // let files: string[] | FileInfo[] = [];
   const files: FileInfo[] = [];
@@ -1028,7 +1056,7 @@ export function readdirRecursivelySync(
       });
     } else {
       // @note
-      // The dires will be filterd after getting subdirectory information
+      // The dires will be filtered after getting subdirectory information
       dirs.push({
         name: dirent.name,
         relPath,
@@ -1040,7 +1068,7 @@ export function readdirRecursivelySync(
     }
   });
 
-  // Get the all of sub directoies files recursively
+  // Get the all of sub directories files recursively
   // let dirsBranches: string[] | FileInfo[] = [];
   let dirsBranches: FileInfo[] = [];
 
@@ -1073,7 +1101,7 @@ export function readdirRecursivelySync(
   // Sort
   // files.sort(sortFileInfo);
 
-  const withFileTypes = obtain(options, 'withFileTypes', false);
+  const withFileTypes = _.get(options, 'withFileTypes', false);
   if (!withFileTypes) {
     return rtnFilesInfo.map((file) => file.relPath);
   }

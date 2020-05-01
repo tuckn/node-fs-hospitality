@@ -26,7 +26,7 @@ Options:
   -V, --version                output the version number
   -D, --is-only-dir            Exacting directories only
   -F, --is-only-file           Exacting files only
-  -S, --excludes-symlink       Excluding symblic-links
+  -S, --excludes-symlink       Excluding symbolic-links
   -M, --matched-reg-exp <exp>  Ex. "\d+\.txt$"
   -I, --ignored-reg-exp <exp>  Ex. "[_\-.]cache\d+"
   -W, --with-file-types        Returns file info objects (like fs.Dirent)
@@ -53,7 +53,7 @@ program
   .description('Detecting a text specification.')
   .option('-D, --is-only-dir', 'Exacting directories only')
   .option('-F, --is-only-file', 'Exacting files only')
-  .option('-S, --excludes-symlink', 'Excluding symblic-links')
+  .option('-S, --excludes-symlink', 'Excluding symbolic-links')
   .option('-M, --matched-reg-exp <exp>', 'Ex. "\\.txt$"')
   .option('-I, --ignored-reg-exp <exp>', 'Ex. "[_\\-.]cache\\d+"')
   .option('-W, --with-file-types', 'Returns file info objects (fs.Dirent)')
