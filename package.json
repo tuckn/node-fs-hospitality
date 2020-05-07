@@ -1,7 +1,7 @@
 {
   "name": "@tuckn/fs-hospitality",
   "description": "Extra methods for Node.js fs object. e.g. readAsText read a file with automatically detecting a character encoding. ",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": "Tuckn <tuckn333+github@gmail.com>",
   "private": false,
   "license": "MIT",
