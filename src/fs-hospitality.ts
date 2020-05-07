@@ -394,6 +394,11 @@ export function trimAllLines(strLines: string, option = 'all'): string {
 }
 
 /**
+ * @typedef {string} TrimAllLinesOption
+ */
+type TrimAllLinesOption = 'all' | 'start' | 'end';
+
+/**
  * @typedef {object} PrewriteAsTextOptions
  * @readonly
  * @property {TrimAllLinesOption} [trim]
@@ -402,6 +407,7 @@ export function trimAllLines(strLines: string, option = 'all'): string {
  * @property {string} [encoding] - See {@link https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings|iconv-lite Supported Encodings}
  */
 type PrewriteAsTextOptions = {
+  // trim?: TrimAllLinesOption;
   trim?: string;
   eol?: string;
   bom?: boolean;
@@ -411,7 +417,7 @@ type PrewriteAsTextOptions = {
 /**
  * @private
  * @param {string} [strData='']
- * @param {PrewriteAsTextOptions} [options]
+ * @param {PrewriteAsTextOptions} [options] - Optional parameters
  * @returns {string} - A formatted text
  */
 function _prewriteAsText(
@@ -437,7 +443,7 @@ function _prewriteAsText(
  * @memberof API
  * @param {string} destPath - A destination file-path
  * @param {string} [strData=''] - A string of data to write
- * @param {PrewriteAsTextOptions} [options]
+ * @param {PrewriteAsTextOptions} [options] - Optional parameters
  * @returns {Promise<void>} - { resolve:undefined, reject: Error }
  * @example
   const { writeAsText } = require('@tuckn/fs-hospitality');
@@ -473,17 +479,22 @@ export function writeAsText(
   const encoding = _.get(options, 'encoding', 'utf8');
 
   return new Promise((resolve, reject) => {
-    fs.writeFile(
-      filePath,
-      iconv.encode(writtenData, encoding, addBOM),
-      (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      },
-    );
+    const dirPath = path.dirname(filePath);
+    fs.mkdir(dirPath, { recursive: true }, (errMkDir) => {
+      if (errMkDir) return reject(errMkDir);
+
+      return fs.writeFile(
+        filePath,
+        iconv.encode(writtenData, encoding, addBOM),
+        (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        },
+      );
+    });
   });
 }
 
@@ -525,6 +536,9 @@ export function writeAsTextSync(
   if (_.get(options, 'bom', false)) addBOM = { addBOM: true };
 
   const encoding = _.get(options, 'encoding', 'utf8');
+
+  const dirPath = path.dirname(filePath);
+  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 
   return fs.writeFileSync(
     filePath,

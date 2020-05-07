@@ -333,7 +333,7 @@ The below is example on Windows.
 
 ## Documentation
 
-All specifications are written [here](https://docs.tuckn.net/node-fs-hospitality).
+See all specifications [here](https://docs.tuckn.net/node-fs-hospitality).
 
 ## License
 

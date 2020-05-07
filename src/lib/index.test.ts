@@ -407,6 +407,13 @@ describe('fs-hospitality', () => {
       fs.unlinkSync(tmpPath);
     });
 
+    // Auto mkdir
+    const noneExistingDir = fsh.makeTmpPath();
+    const nePath = path.join(noneExistingDir, 'foo', 'bar', 'to-write.txt');
+    await fsh.writeAsText(nePath, 'The .txt Content');
+    // Clean
+    rimraf.sync(noneExistingDir);
+
     // Test throwing Errors
     await expect(fsh.writeAsText('')).rejects.toThrow();
 
@@ -425,6 +432,13 @@ describe('fs-hospitality', () => {
       // Clean
       fs.unlinkSync(tmpPath);
     });
+
+    // Auto mkdir
+    const noneExistingDir = fsh.makeTmpPath();
+    const nePath = path.join(noneExistingDir, 'foo', 'bar', 'to-write.txt');
+    fsh.writeAsTextSync(nePath, 'The .txt Content');
+    // Clean
+    rimraf.sync(noneExistingDir);
 
     // Test throwing Errors
     expect(() => fsh.writeAsTextSync('')).toThrow();

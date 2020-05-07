@@ -4,6 +4,7 @@ module.exports = {
   ignorePatterns: [
     '!*.js',
     '!*.ts',
+    './assets/',
     './coverage/',
     './dist/',
     './node_modules/',

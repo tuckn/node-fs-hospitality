@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "commonjs",
+    "sourceMap": true,
     "lib": ["esnext"],
     "types": ["node", "jest"],
     "strict": true,
