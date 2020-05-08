@@ -27,13 +27,13 @@ const _errLoc = (fn: Function) => `\n    at ${fn.name} (${__filename})`;
  * @param {(Buffer|string)} textData - A Buffer or a file-path
  * @returns {Buffer} - The entire contents
  * @example
-  const { textDataToBuf } = require('@tuckn/fs-hospitality');
+const { textDataToBuf } = require('@tuckn/fs-hospitality');
  
-  const buf = textDataToBuf('D:\\Test\\SjisNote.txt'); // file-path
-  // Returns: fs.readFileSync('D:\\Test\\SjisNote.txt')
+const buf = textDataToBuf('D:\\Test\\SjisNote.txt'); // file-path
+// Returns: fs.readFileSync('D:\\Test\\SjisNote.txt')
  
-  const buf2 = textDataToBuf(buf); // Buffer
-  // Returns: buf
+const buf2 = textDataToBuf(buf); // Buffer
+// Returns: buf
  */
 export function textDataToBuf(textData: Buffer | string): Buffer {
   if (Buffer.isBuffer(textData)) return textData;
@@ -54,16 +54,16 @@ export function textDataToBuf(textData: Buffer | string): Buffer {
  * @param {(Buffer|string)} textData - A Buffer or a file-path
  * @returns {string} - A name of character encoding. A binary file would be detected as UTF32.
  * @example
-  const { detectTextEncoding } = require('@tuckn/fs-hospitality');
+const { detectTextEncoding } = require('@tuckn/fs-hospitality');
  
-  const encoding = detectTextEncoding('D:\\Test\\SjisNote.txt');
-  // Returns: 'SJIS'
+const encoding = detectTextEncoding('D:\\Test\\SjisNote.txt');
+// Returns: 'SJIS'
  
-  const encoding2 = detectTextEncoding('D:\\Test\\Utf16LeNote.doc');
-  // Returns: 'UTF-16LE'
+const encoding2 = detectTextEncoding('D:\\Test\\Utf16LeNote.doc');
+// Returns: 'UTF-16LE'
  
-  const encoding3 = detectTextEncoding('D:\\Test\\image.png');
-  // Returns: 'UTF32'
+const encoding3 = detectTextEncoding('D:\\Test\\image.png');
+// Returns: 'UTF32'
  */
 export function detectTextEncoding(textData: Buffer | string): string {
   const buf = textDataToBuf(textData);
@@ -87,11 +87,11 @@ export function detectTextEncoding(textData: Buffer | string): string {
  * @param {string} [encoding=''] - A specifying encoding. falsy to auto
  * @returns {string} - A encoded string
  * @example
-  const { decodeTextBuffer } = require('@tuckn/fs-hospitality');
+const { decodeTextBuffer } = require('@tuckn/fs-hospitality');
  
-  const textBuf = fs.readFileSync('D:\\Test\\SjisCRLF.txt');
-  const text = decodeTextBuffer(textBuf);
-  // Returns: 'これはshift-JISで書かれたファイルです。'
+const textBuf = fs.readFileSync('D:\\Test\\SjisCRLF.txt');
+const text = decodeTextBuffer(textBuf);
+// Returns: 'これはshift-JISで書かれたファイルです。'
  */
 export function decodeTextBuffer(textBuf: Buffer, encoding = ''): string {
   let enc = encoding;
@@ -107,14 +107,14 @@ export function decodeTextBuffer(textBuf: Buffer, encoding = ''): string {
  * @param {(Buffer|string)} textData - Buffer of file-path
  * @returns {string} - "crlf" | "cr" | "lf" | ""
  * @example
-  const { detectTextEol } = require('@tuckn/fs-hospitality');
+const { detectTextEol } = require('@tuckn/fs-hospitality');
  
-  const eol = detectTextEol('D:\\Test\\SjisCRLF.txt'); // file-path
-  // Returns: 'crlf'
+const eol = detectTextEol('D:\\Test\\SjisCRLF.txt'); // file-path
+// Returns: 'crlf'
  
-  const buf = 'D:\\Test\\Utf8.doc'
-  const eol2 = detectTextEol(buf); // Buffer
-  // Returns: 'lf'
+const buf = 'D:\\Test\\Utf8.doc'
+const eol2 = detectTextEol(buf); // Buffer
+// Returns: 'lf'
  */
 export function detectTextEol(textData: Buffer | string): string {
   const buf = textDataToBuf(textData);
@@ -140,11 +140,11 @@ export function detectTextEol(textData: Buffer | string): string {
  * @param {object} [options] - See {@link https://nodejs.org/api/fs.html#fs_fs_readfile_path_options_callback|Node.js fs.readFile}
  * @returns {Promise<Buffer|string>} -
  * @example
-  const { readFilePromise } = require('@tuckn/fs-hospitality');
+const { readFilePromise } = require('@tuckn/fs-hospitality');
  
-  // All arguments are same with fs.readFile
-  const data = await readFilePromise('D:\\Test\\myData.dat');
-  console.log(data);
+// All arguments are same with fs.readFile
+const data = await readFilePromise('D:\\Test\\myData.dat');
+console.log(data);
  */
 export function readFilePromise(
   filePath: Buffer | string,
@@ -166,24 +166,24 @@ export function readFilePromise(
  * @param {string} [encoding=''] - If empty, auto-detecting
  * @returns {Promise<string>} -
  * @example
-  const { readAsText } = require('@tuckn/fs-hospitality');
+const { readAsText } = require('@tuckn/fs-hospitality');
  
-  // Ex.1 From a file-path
-  const fileSjis = 'D:\\Test\\MyNoteSJIS.txt'
+// Ex.1 From a file-path
+const fileSjis = 'D:\\Test\\MyNoteSJIS.txt'
  
-  readAsText(fileSjis).then((textString) => {
-    console.log(textString);
-    // Returns String parsed with Shift_JIS
-  });
+readAsText(fileSjis).then((textString) => {
+  console.log(textString);
+  // Returns String parsed with Shift_JIS
+});
  
-  // Ex.2 From a Buffer
-  const fileUtf16LE = 'D:\\Test\\Utf16LE.log'
+// Ex.2 From a Buffer
+const fileUtf16LE = 'D:\\Test\\Utf16LE.log'
  
-  fs.readFile(fileUtf16LE, async (err, data) => {
-    const textString = await readAsText(data);
-    console.log(textString);
-    // Returns String parsed with UTF-16LE
-  });
+fs.readFile(fileUtf16LE, async (err, data) => {
+  const textString = await readAsText(data);
+  console.log(textString);
+  // Returns String parsed with UTF-16LE
+});
  */
 export async function readAsText(
   textFile: Buffer | string,
@@ -217,16 +217,16 @@ export async function readAsText(
  * @param {string} [encoding=''] - If empty, auto-detecting
  * @returns {string} -
  * @example
- * const { readAsTextSync } = require('@tuckn/fs-hospitality');
- *
- * // Ex.1 From the file-path
- * const textString = readAsTextSync('D:\\Test\\MyNoteSJIS.txt');
- * // Returns String parsed with Shift_JIS
- *
- * // Ex.2 From the Buffer
- * const buf = fs.readFile('D:\\Test\\Utf16LE.log');
- * const textString2 = readAsTextSync(buf);
- * // Returns String parsed with UTF-16LE
+const { readAsTextSync } = require('@tuckn/fs-hospitality');
+ 
+// Ex.1 From the file-path
+const textString = readAsTextSync('D:\\Test\\MyNoteSJIS.txt');
+// Returns String parsed with Shift_JIS
+ 
+// Ex.2 From the Buffer
+const buf = fs.readFile('D:\\Test\\Utf16LE.log');
+const textString2 = readAsTextSync(buf);
+// Returns String parsed with UTF-16LE
  */
 export function readAsTextSync(
   textFile: string | Buffer,
@@ -256,19 +256,19 @@ export function readAsTextSync(
  * @param {string} eol - "(lf|unix|\n)" | "(cr|mac|\r)" | "(crlf|dos|\r\n)"
  * @returns {string} - A replaced string
  * @example
-  const { convertEOL } = require('@tuckn/fs-hospitality');
+const { convertEOL } = require('@tuckn/fs-hospitality');
  
-  const textCrLf = 'foo\r\n'
-    + 'bar\r\n'
-    + '\r\n'
-    + 'baz';
+const textCrLf = 'foo\r\n'
+  + 'bar\r\n'
+  + '\r\n'
+  + 'baz';
  
-  const textLf = convertEOL(textCrLf, 'lf');
-  // Returns:
-  // 'foo\n'
-  //   + 'bar\n
-  //   + '\n
-  //   + 'baz'
+const textLf = convertEOL(textCrLf, 'lf');
+// Returns:
+// 'foo\n'
+//   + 'bar\n
+//   + '\n
+//   + 'baz'
  */
 export function convertEOL(strData: string, eol = ''): string {
   let eolCode;
@@ -289,29 +289,29 @@ export function convertEOL(strData: string, eol = ''): string {
  * @param {string} [postfix]
  * @returns {string} - A temporary path
  * @example
-  const { makeTmpPath } = require('@tuckn/fs-hospitality');
+const { makeTmpPath } = require('@tuckn/fs-hospitality');
  
-  const tmpPath1 = makeTmpPath();
-  // Returns: 'C:\Users\YourName\AppData\Local\Temp\7c70ceef-28f6-4ae8-b4ef-5e5d459ef007'
+const tmpPath1 = makeTmpPath();
+// Returns: 'C:\Users\YourName\AppData\Local\Temp\7c70ceef-28f6-4ae8-b4ef-5e5d459ef007'
  
-  // If necessary, make sure that the file does not exist.
-  const fs = require('fs');
-  if (fs.existsSync(tmpPath1)) throw new Error('Oops!');
+// If necessary, make sure that the file does not exist.
+const fs = require('fs');
+if (fs.existsSync(tmpPath1)) throw new Error('Oops!');
  
-  // Makes on the current working directory
-  const tmpPath2 = makeTmpPath('.');
-  // Returns: 'D:\test\2a5d35c8-7214-4ec7-a41d-a371b19273e7'
+// Makes on the current working directory
+const tmpPath2 = makeTmpPath('.');
+// Returns: 'D:\test\2a5d35c8-7214-4ec7-a41d-a371b19273e7'
  
-  // Make on SMB path
-  const tmpPath3 = makeTmpPath('\\\\server\\public');
-  // Returns: '\\server\public\01fa6ce7-e6d3-4b50-bdcd-19679c49bef2'
+// Make on SMB path
+const tmpPath3 = makeTmpPath('\\\\server\\public');
+// Returns: '\\server\public\01fa6ce7-e6d3-4b50-bdcd-19679c49bef2'
  
-  // with the prefix name
-  const tmpPath2 = makeTmpPath('', 'MyTemp_');
-  // Returns: 'C:\Users\YourName\AppData\Local\Temp\MyTemp_42dc1759-b744-4f2a-840f-e6fa27191cff'
+// with the prefix name
+const tmpPath2 = makeTmpPath('', 'MyTemp_');
+// Returns: 'C:\Users\YourName\AppData\Local\Temp\MyTemp_42dc1759-b744-4f2a-840f-e6fa27191cff'
  
-  const tmpPath4 = makeTmpPath('R:', 'tmp_', '.log');
-  // Returns: 'R:\tmp_14493643-792d-4b0d-b2af-c74531db625e.log'
+const tmpPath4 = makeTmpPath('R:', 'tmp_', '.log');
+// Returns: 'R:\tmp_14493643-792d-4b0d-b2af-c74531db625e.log'
  */
 export function makeTmpPath(baseDir = '', prefix = '', postfix = ''): string {
   let basePath = baseDir;
@@ -328,15 +328,15 @@ export function makeTmpPath(baseDir = '', prefix = '', postfix = ''): string {
  * @param {object} [options] - See {@link https://nodejs.org/api/fs.html#fs_fs_writefilesync_file_data_options|Node.js fs.writeFileSync}
  * @returns {string} - A temporary file path
  * @example
-  const { writeTmpFileSync } = require('@tuckn/fs-hospitality');
+const { writeTmpFileSync } = require('@tuckn/fs-hospitality');
  
-  const tmpStr = 'The Temporary Message';
-  const tmpPath = writeTmpFileSync(tmpStr);
-  // Returns: 'C:\Users\YourName\AppData\Local\Temp\7c70ceef-28f6-4ae8-b4ef-5e5d459ef007'
+const tmpStr = 'The Temporary Message';
+const tmpPath = writeTmpFileSync(tmpStr);
+// Returns: 'C:\Users\YourName\AppData\Local\Temp\7c70ceef-28f6-4ae8-b4ef-5e5d459ef007'
  
-  const fs = require('fs');
-  const readData = fs.readFileSync(tmpPath, { encoding: 'utf8' });
-  console.log(tmpStr === readData); // true
+const fs = require('fs');
+const readData = fs.readFileSync(tmpPath, { encoding: 'utf8' });
+console.log(tmpStr === readData); // true
  */
 export function writeTmpFileSync(
   data: Buffer | string | ArrayBuffer,
@@ -364,21 +364,21 @@ function _trimAllLinesReplacer(matched: string): string {
  * @param {string} [option='all'] - 'all' | 'start' | 'end';
  * @returns {string} - A trimmed string
  * @example
-  const { trimAllLines } = require('@tuckn/fs-hospitality');
+const { trimAllLines } = require('@tuckn/fs-hospitality');
  
-  const str = '  foo  \n'
-    + '  bar  \n'
-    + ' baz  ';
+const str = '  foo  \n'
+  + '  bar  \n'
+  + ' baz  ';
  
-  const trimmedStr1 = trimAllLines(str);
-  // Returns: 'foo\n'
-  //   + 'bar\n'
-  //   + 'baz';
+const trimmedStr1 = trimAllLines(str);
+// Returns: 'foo\n'
+//   + 'bar\n'
+//   + 'baz';
  
-  const trimmedStr2 = trimAllLines(str, 'end');
-  // Returns: '  foo\n'
-  //   + '  bar\n'
-  //   + ' baz';
+const trimmedStr2 = trimAllLines(str, 'end');
+// Returns: '  foo\n'
+//   + '  bar\n'
+//   + ' baz';
  */
 export function trimAllLines(strLines: string, option = 'all'): string {
   let trimmed = strLines;
@@ -446,18 +446,19 @@ function _prewriteAsText(
  * @param {PrewriteAsTextOptions} [options] - Optional parameters
  * @returns {Promise<void>} - { resolve:undefined, reject: Error }
  * @example
-  const { writeAsText } = require('@tuckn/fs-hospitality');
-  const vbsFile = 'D:\\Test\\utf8bom.vbs';
-  const strData = 'Dim str As String  \n  str = "foo"\n  WScript.Echo str';
- 
-  writeAsText(vbsFile, strData, {
-    trim: 'all',
-    eol: 'crlf',
-    bom: true,
-    encoding: 'UTF-8',
-  }).then(() => {
-    console.log('Writing successful');
-  });
+const { writeAsText } = require('@tuckn/fs-hospitality');
+const vbsFile = 'D:\\Test\\utf8bom.vbs';
+const strData = 'Dim str As String  \n  str = "foo"\n  WScript.Echo str';
+const options = {
+  trim: 'all',
+  eol: 'crlf',
+  bom: true,
+  encoding: 'UTF-8',
+};
+
+writeAsText(vbsFile, strData, options).then(() => {
+  console.log('Writing successful');
+});
  */
 export function writeAsText(
   destPath: string,
@@ -507,18 +508,18 @@ export function writeAsText(
  * @param {object} options - See {@link API.writeAsText}
  * @returns {void}
  * @example
- * const { writeAsText } = require('@tuckn/fs-hospitality');
- * const vbsFile = 'D:\\Test\\utf8bom.vbs';
- * const strData = 'Dim str As String  \n  str = "foo"\n  WScript.Echo str';
- *
- * writeAsText(vbsFile, strData, {
- * trim: 'all',
- * eol: 'crlf',
- * bom: true,
- * encoding: 'UTF-8',
- * }).then(() => {
- * console.log('Writing successful');
- * });
+const { writeAsTextSync } = require('@tuckn/fs-hospitality');
+const vbsFile = 'D:\\Test\\utf8bom.vbs';
+const strData = 'Dim str As String  \n  str = "foo"\n  WScript.Echo str';
+const options = {
+  trim: 'all',
+  eol: 'crlf',
+  bom: true,
+  encoding: 'UTF-8',
+};
+ 
+writeAsTextSync(vbsFile, strData, options);
+console.log('Writing successful');
  */
 export function writeAsTextSync(
   destPath: string,
@@ -554,13 +555,13 @@ export function writeAsTextSync(
  * @param {string} newPath - A destination path
  * @returns {Promise<string>} - Returns mklink stdout
  * @example
-  const { mklink } = require('@tuckn/fs-hospitality');
+const { mklink } = require('@tuckn/fs-hospitality');
  
-  // on Windows, use mklink of command in Command-Prompt and requires admin rights
-  mklink('D:\\MySrc\\TestDir', 'C:\\Test').then((stdout) => {
-    console.log(stdout);
-    // Created the symbolic link on "C:\"
-  });
+// on Windows, use mklink of command in Command-Prompt and requires admin rights
+mklink('D:\\MySrc\\TestDir', 'C:\\Test').then((stdout) => {
+  console.log(stdout);
+  // Created the symbolic link on "C:\"
+});
  */
 export async function mklink(
   existingPath: string,
@@ -624,11 +625,11 @@ export async function mklink(
  * @param {string} newPath - A destination path
  * @returns {string} - Returns mklink stdout
  * @example
-  const { mklinkSync } = require('@tuckn/fs-hospitality');
+const { mklinkSync } = require('@tuckn/fs-hospitality');
  
-  // on Windows, use mklink of command in Command-Prompt and requires admin rights
-  const stdout = mklinkSync('D:\\MySrc\\TestDir', 'C:\\Test');
-  // Created the symbolic link on "C:\"
+// on Windows, use mklink of command in Command-Prompt and requires admin rights
+const stdout = mklinkSync('D:\\MySrc\\TestDir', 'C:\\Test');
+// Created the symbolic link on "C:\"
  */
 export function mklinkSync(
   existingPath: string,
@@ -739,122 +740,122 @@ function sortFileInfo(a: FileInfo, b: FileInfo): 0 | 1 | -1 {
  * @param {string} [options._prefixDirName] - @private The internal option
  * @returns {Promise<string[]|FileInfo[]>} - { resolve:string, reject:Error }
  * @example
-  const { readdirRecursively } = require('@tuckn/fs-hospitality');
+const { readdirRecursively } = require('@tuckn/fs-hospitality');
  
-  // D:\Test\
-  // │  FILE_ROOT1.TXT
-  // │  fileRoot2-Symlink.log
-  // │  fileRoot2.log
-  // │
-  // ├─DirBar
-  // │  │  fileBar1.txt
-  // │  │
-  // │  └─DirQuux
-  // │          fileQuux1-Symlink.txt
-  // │          fileQuux1.txt
-  // │
-  // ├─DirFoo
-  // └─DirFoo-Symlink
+// D:\Test\
+// │  FILE_ROOT1.TXT
+// │  fileRoot2-Symlink.log
+// │  fileRoot2.log
+// │
+// ├─DirBar
+// │  │  fileBar1.txt
+// │  │
+// │  └─DirQuux
+// │          fileQuux1-Symlink.txt
+// │          fileQuux1.txt
+// │
+// ├─DirFoo
+// └─DirFoo-Symlink
  
-  readdirRecursively('D:\\Test').then((files) => {
-    console.dir(files);
-    // Returns [
-    //   'DirFoo-Symlink',
-    //   'fileRoot2-Symlink.log',
-    //   'fileRoot2.log',
-    //   'FILE_ROOT1.TXT',
-    //   'DirFoo',
-    //   'DirBar',
-    //   'DirBar\\fileBar1.txt',
-    //   'DirBar\\DirQuux',
-    //   'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
-    //   'DirBar\\DirQuux\\fileQuux1.txt' ]
+readdirRecursively('D:\\Test').then((files) => {
+  console.dir(files);
+  // Returns [
+  //   'DirFoo-Symlink',
+  //   'fileRoot2-Symlink.log',
+  //   'fileRoot2.log',
+  //   'FILE_ROOT1.TXT',
+  //   'DirFoo',
+  //   'DirBar',
+  //   'DirBar\\fileBar1.txt',
+  //   'DirBar\\DirQuux',
+  //   'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
+  //   'DirBar\\DirQuux\\fileQuux1.txt' ]
  
-  readdirRecursively('D:\\Test', { withFileTypes: true }).then((files) => {
-    console.dir(files);
-    // Returns [
-    //   {
-    //     name: 'DirFoo-Symlink',
-    //     relPath: 'DirFoo-Symlink',
-    //     path: 'D:\\Test\\DirFoo-Symlink',
-    //     isDirectory: false,
-    //     isFile: false,
-    //     isSymbolicLink: true
-    //   },
-    //   {
-    //     name: 'fileRoot2-Symlink.log',
-    //     relPath: 'fileRoot2-Symlink.log',
-    //     path: 'D:\\Test\\fileRoot2-Symlink.log',
-    //     isDirectory: false,
-    //     isFile: false,
-    //     isSymbolicLink: true
-    //   },
-    //   {
-    //     name: 'fileRoot2.log',
-    //     relPath: 'fileRoot2.log',
-    //     path: 'D:\\Test\\fileRoot2.log',
-    //     isDirectory: false,
-    //     isFile: true,
-    //     isSymbolicLink: false
-    //   },
-    //   {
-    //     name: 'FILE_ROOT1.TXT',
-    //     relPath: 'FILE_ROOT1.TXT',
-    //     path: 'D:\\Test\\FILE_ROOT1.TXT',
-    //     isDirectory: false,
-    //     isFile: true,
-    //     isSymbolicLink: false
-    //   },
-    //   {
-    //     name: 'DirFoo',
-    //     relPath: 'DirFoo',
-    //     path: 'D:\\Test\\DirFoo',
-    //     isDirectory: true,
-    //     isFile: false,
-    //     isSymbolicLink: false
-    //   },
-    //   {
-    //     name: 'DirBar',
-    //     relPath: 'DirBar',
-    //     path: 'D:\\Test\\DirBar',
-    //     isDirectory: true,
-    //     isFile: false,
-    //     isSymbolicLink: false
-    //   },
-    //   {
-    //     name: 'fileBar1.txt',
-    //     relPath: 'DirBar\\fileBar1.txt',
-    //     path: 'D:\\Test\\DirBar\\fileBar1.txt',
-    //     isDirectory: false,
-    //     isFile: true,
-    //     isSymbolicLink: false
-    //   },
-    //   {
-    //     name: 'DirQuux',
-    //     relPath: 'DirBar\\DirQuux',
-    //     path: 'D:\\Test\\DirBar\\DirQuux',
-    //     isDirectory: true,
-    //     isFile: false,
-    //     isSymbolicLink: false
-    //   },
-    //   {
-    //     name: 'fileQuux1-Symlink.txt',
-    //     relPath: 'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
-    //     path: 'D:\\Test\\DirBar\\DirQuux\\fileQuux1-Symlink.txt',
-    //     isDirectory: false,
-    //     isFile: false,
-    //     isSymbolicLink: true
-    //   },
-    //   {
-    //     name: 'fileQuux1.txt',
-    //     relPath: 'DirBar\\DirQuux\\fileQuux1.txt',
-    //     path: 'D:\\Test\\DirBar\\DirQuux\\fileQuux1.txt',
-    //     isDirectory: false,
-    //     isFile: true,
-    //     isSymbolicLink: false
-    //   }
-    // ]
-  });
+readdirRecursively('D:\\Test', { withFileTypes: true }).then((files) => {
+  console.dir(files);
+  // Returns [
+  //   {
+  //     name: 'DirFoo-Symlink',
+  //     relPath: 'DirFoo-Symlink',
+  //     path: 'D:\\Test\\DirFoo-Symlink',
+  //     isDirectory: false,
+  //     isFile: false,
+  //     isSymbolicLink: true
+  //   },
+  //   {
+  //     name: 'fileRoot2-Symlink.log',
+  //     relPath: 'fileRoot2-Symlink.log',
+  //     path: 'D:\\Test\\fileRoot2-Symlink.log',
+  //     isDirectory: false,
+  //     isFile: false,
+  //     isSymbolicLink: true
+  //   },
+  //   {
+  //     name: 'fileRoot2.log',
+  //     relPath: 'fileRoot2.log',
+  //     path: 'D:\\Test\\fileRoot2.log',
+  //     isDirectory: false,
+  //     isFile: true,
+  //     isSymbolicLink: false
+  //   },
+  //   {
+  //     name: 'FILE_ROOT1.TXT',
+  //     relPath: 'FILE_ROOT1.TXT',
+  //     path: 'D:\\Test\\FILE_ROOT1.TXT',
+  //     isDirectory: false,
+  //     isFile: true,
+  //     isSymbolicLink: false
+  //   },
+  //   {
+  //     name: 'DirFoo',
+  //     relPath: 'DirFoo',
+  //     path: 'D:\\Test\\DirFoo',
+  //     isDirectory: true,
+  //     isFile: false,
+  //     isSymbolicLink: false
+  //   },
+  //   {
+  //     name: 'DirBar',
+  //     relPath: 'DirBar',
+  //     path: 'D:\\Test\\DirBar',
+  //     isDirectory: true,
+  //     isFile: false,
+  //     isSymbolicLink: false
+  //   },
+  //   {
+  //     name: 'fileBar1.txt',
+  //     relPath: 'DirBar\\fileBar1.txt',
+  //     path: 'D:\\Test\\DirBar\\fileBar1.txt',
+  //     isDirectory: false,
+  //     isFile: true,
+  //     isSymbolicLink: false
+  //   },
+  //   {
+  //     name: 'DirQuux',
+  //     relPath: 'DirBar\\DirQuux',
+  //     path: 'D:\\Test\\DirBar\\DirQuux',
+  //     isDirectory: true,
+  //     isFile: false,
+  //     isSymbolicLink: false
+  //   },
+  //   {
+  //     name: 'fileQuux1-Symlink.txt',
+  //     relPath: 'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
+  //     path: 'D:\\Test\\DirBar\\DirQuux\\fileQuux1-Symlink.txt',
+  //     isDirectory: false,
+  //     isFile: false,
+  //     isSymbolicLink: true
+  //   },
+  //   {
+  //     name: 'fileQuux1.txt',
+  //     relPath: 'DirBar\\DirQuux\\fileQuux1.txt',
+  //     path: 'D:\\Test\\DirBar\\DirQuux\\fileQuux1.txt',
+  //     isDirectory: false,
+  //     isFile: true,
+  //     isSymbolicLink: false
+  //   }
+  // ]
+});
  */
 export async function readdirRecursively(
   dirPath: string,
@@ -979,36 +980,36 @@ export async function readdirRecursively(
  * @param {object} options - See {@link API.readdirRecursively}
  * @returns {string[]|FileInfo[]} -
  * @example
- * const { readdirRecursivelySync } = require('@tuckn/fs-hospitality');
- *
- * // D:\Test\
- * // │  FILE_ROOT1.TXT
- * // │  fileRoot2-Symlink.log
- * // │  fileRoot2.log
- * // │
- * // ├─DirBar
- * // │  │  fileBar1.txt
- * // │  │
- * // │  └─DirQuux
- * // │          fileQuux1-Symlink.txt
- * // │          fileQuux1.txt
- * // │
- * // ├─DirFoo
- * // └─DirFoo-Symlink
- *
- * const files = readdirRecursivelySync('D:\\Test');
- * console.dir(files);
- * // Returns [
- * //   'DirFoo-Symlink',
- * //   'fileRoot2-Symlink.log',
- * //   'fileRoot2.log',
- * //   'FILE_ROOT1.TXT',
- * //   'DirFoo',
- * //   'DirBar',
- * //   'DirBar\\fileBar1.txt',
- * //   'DirBar\\DirQuux',
- * //   'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
- * //   'DirBar\\DirQuux\\fileQuux1.txt' ]
+const { readdirRecursivelySync } = require('@tuckn/fs-hospitality');
+ 
+// D:\Test\
+// │  FILE_ROOT1.TXT
+// │  fileRoot2-Symlink.log
+// │  fileRoot2.log
+// │
+// ├─DirBar
+// │  │  fileBar1.txt
+// │  │
+// │  └─DirQuux
+// │          fileQuux1-Symlink.txt
+// │          fileQuux1.txt
+// │
+// ├─DirFoo
+// └─DirFoo-Symlink
+ 
+const files = readdirRecursivelySync('D:\\Test');
+console.dir(files);
+// Returns [
+//   'DirFoo-Symlink',
+//   'fileRoot2-Symlink.log',
+//   'fileRoot2.log',
+//   'FILE_ROOT1.TXT',
+//   'DirFoo',
+//   'DirBar',
+//   'DirBar\\fileBar1.txt',
+//   'DirBar\\DirQuux',
+//   'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
+//   'DirBar\\DirQuux\\fileQuux1.txt' ]
  */
 export function readdirRecursivelySync(
   dirPath: string,

@@ -24,7 +24,7 @@ Asynchronous
 ```js
 const fsh = require('@tuckn/fs-hospitality');
 
-fsh.readAsText('D:\\Test\\MyNoteSJIS.txt').then((textString) => {
+fsh.readAsText('D:\\Test\\MyNoteSJIS.txt').then(textString => {
   console.log(textString);
   // Returns String parsed with Shift_JIS
 });
@@ -55,6 +55,8 @@ const options = { trim: 'all', eol: 'crlf', encoding: 'SJIS' };
 
 fsh.writeAsText('D:\\Test\\sjis.vbs', vbsCode, options).then(() => {
   console.log('Writing successful');
+  // Returns
+  // 'Dim str As String\r\n' + 'str = "テスト"\r\n' + 'WScript.Echo str\r\n';
 });
 ```
 
@@ -101,7 +103,7 @@ Asynchronous
 ```js
 const fsh = require('@tuckn/fs-hospitality');
 
-fsh.readdirRecursively('D:\\Test').then((files) => {
+fsh.readdirRecursively('D:\\Test').then(files => {
   console.log(files);
   // Returns [
   //   'DirFoo-Symlink',
@@ -142,7 +144,7 @@ Use `withFileTypes` option
 ```js
 const fsh = require('@tuckn/fs-hospitality');
 
-readdirRecursively('D:\\Test', { withFileTypes: true }).then((files) => {
+readdirRecursively('D:\\Test', { withFileTypes: true }).then(files => {
   console.log(files);
   // Returns [
   //   {
@@ -198,7 +200,7 @@ Asynchronous
 const fsh = require('@tuckn/fs-hospitality');
 
 // on Windows, use mklink of command in Command-Prompt and requires admin rights
-fsh.mklink('D:\\MySrc\\TestDir', 'C:\\Test').then((stdout) => {
+fsh.mklink('D:\\MySrc\\TestDir', 'C:\\Test').then(stdout => {
   console.log(stdout);
   // Created the symbolic link on "C:\"
 });
