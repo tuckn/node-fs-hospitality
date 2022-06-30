@@ -1,6 +1,6 @@
 import * as chardet from 'chardet';
 import { exec, execSync } from 'child_process';
-import * as encodingJp from 'encoding-japanese';
+import * as EncodingJp from 'encoding-japanese';
 import * as fs from 'fs';
 import * as iconv from 'iconv-lite';
 import * as _ from 'lodash';
@@ -28,10 +28,10 @@ const _errLoc = (fn: Function) => `\n    at ${fn.name} (${__filename})`;
  * @returns {Buffer} - The entire contents
  * @example
 const { textDataToBuf } = require('@tuckn/fs-hospitality');
- 
+
 const buf = textDataToBuf('D:\\Test\\SjisNote.txt'); // file-path
 // Returns: fs.readFileSync('D:\\Test\\SjisNote.txt')
- 
+
 const buf2 = textDataToBuf(buf); // Buffer
 // Returns: buf
  */
@@ -55,13 +55,13 @@ export function textDataToBuf(textData: Buffer | string): Buffer {
  * @returns {string} - A name of character encoding. A binary file would be detected as UTF32.
  * @example
 const { detectTextEncoding } = require('@tuckn/fs-hospitality');
- 
+
 const encoding = detectTextEncoding('D:\\Test\\SjisNote.txt');
 // Returns: 'SJIS'
- 
+
 const encoding2 = detectTextEncoding('D:\\Test\\Utf16LeNote.doc');
 // Returns: 'UTF-16LE'
- 
+
 const encoding3 = detectTextEncoding('D:\\Test\\image.png');
 // Returns: 'UTF32'
  */
@@ -75,7 +75,7 @@ export function detectTextEncoding(textData: Buffer | string): string {
     );
   }
 
-  if (chardetVal === 'windows-1252') return encodingJp.detect(buf);
+  if (chardetVal === 'windows-1252') return EncodingJp.detect(buf) as string;
   return chardetVal;
 }
 
@@ -88,7 +88,7 @@ export function detectTextEncoding(textData: Buffer | string): string {
  * @returns {string} - A encoded string
  * @example
 const { decodeTextBuffer } = require('@tuckn/fs-hospitality');
- 
+
 const textBuf = fs.readFileSync('D:\\Test\\SjisCRLF.txt');
 const text = decodeTextBuffer(textBuf);
 // Returns: 'これはshift-JISで書かれたファイルです。'
@@ -108,10 +108,10 @@ export function decodeTextBuffer(textBuf: Buffer, encoding = ''): string {
  * @returns {string} - "crlf" | "cr" | "lf" | ""
  * @example
 const { detectTextEol } = require('@tuckn/fs-hospitality');
- 
+
 const eol = detectTextEol('D:\\Test\\SjisCRLF.txt'); // file-path
 // Returns: 'crlf'
- 
+
 const buf = 'D:\\Test\\Utf8.doc'
 const eol2 = detectTextEol(buf); // Buffer
 // Returns: 'lf'
@@ -141,7 +141,7 @@ export function detectTextEol(textData: Buffer | string): string {
  * @returns {Promise<Buffer|string>} -
  * @example
 const { readFilePromise } = require('@tuckn/fs-hospitality');
- 
+
 // All arguments are same with fs.readFile
 const data = await readFilePromise('D:\\Test\\myData.dat');
 console.log(data);
@@ -167,18 +167,18 @@ export function readFilePromise(
  * @returns {Promise<string>} -
  * @example
 const { readAsText } = require('@tuckn/fs-hospitality');
- 
+
 // Ex.1 From a file-path
 const fileSjis = 'D:\\Test\\MyNoteSJIS.txt'
- 
+
 readAsText(fileSjis).then((textString) => {
   console.log(textString);
   // Returns String parsed with Shift_JIS
 });
- 
+
 // Ex.2 From a Buffer
 const fileUtf16LE = 'D:\\Test\\Utf16LE.log'
- 
+
 fs.readFile(fileUtf16LE, async (err, data) => {
   const textString = await readAsText(data);
   console.log(textString);
@@ -218,11 +218,11 @@ export async function readAsText(
  * @returns {string} -
  * @example
 const { readAsTextSync } = require('@tuckn/fs-hospitality');
- 
+
 // Ex.1 From the file-path
 const textString = readAsTextSync('D:\\Test\\MyNoteSJIS.txt');
 // Returns String parsed with Shift_JIS
- 
+
 // Ex.2 From the Buffer
 const buf = fs.readFile('D:\\Test\\Utf16LE.log');
 const textString2 = readAsTextSync(buf);
@@ -257,12 +257,12 @@ export function readAsTextSync(
  * @returns {string} - A replaced string
  * @example
 const { convertEOL } = require('@tuckn/fs-hospitality');
- 
+
 const textCrLf = 'foo\r\n'
   + 'bar\r\n'
   + '\r\n'
   + 'baz';
- 
+
 const textLf = convertEOL(textCrLf, 'lf');
 // Returns:
 // 'foo\n'
@@ -290,26 +290,26 @@ export function convertEOL(strData: string, eol = ''): string {
  * @returns {string} - A temporary path
  * @example
 const { makeTmpPath } = require('@tuckn/fs-hospitality');
- 
+
 const tmpPath1 = makeTmpPath();
 // Returns: 'C:\Users\YourName\AppData\Local\Temp\7c70ceef-28f6-4ae8-b4ef-5e5d459ef007'
- 
+
 // If necessary, make sure that the file does not exist.
 const fs = require('fs');
 if (fs.existsSync(tmpPath1)) throw new Error('Oops!');
- 
+
 // Makes on the current working directory
 const tmpPath2 = makeTmpPath('.');
 // Returns: 'D:\test\2a5d35c8-7214-4ec7-a41d-a371b19273e7'
- 
+
 // Make on SMB path
 const tmpPath3 = makeTmpPath('\\\\server\\public');
 // Returns: '\\server\public\01fa6ce7-e6d3-4b50-bdcd-19679c49bef2'
- 
+
 // with the prefix name
 const tmpPath2 = makeTmpPath('', 'MyTemp_');
 // Returns: 'C:\Users\YourName\AppData\Local\Temp\MyTemp_42dc1759-b744-4f2a-840f-e6fa27191cff'
- 
+
 const tmpPath4 = makeTmpPath('R:', 'tmp_', '.log');
 // Returns: 'R:\tmp_14493643-792d-4b0d-b2af-c74531db625e.log'
  */
@@ -324,22 +324,22 @@ export function makeTmpPath(baseDir = '', prefix = '', postfix = ''): string {
  * Write the data to a new temporary path, and Return the path.
  *
  * @memberof API
- * @param {(Buffer|string|TypedArray|DataView)} data - A data to write
+ * @param {string | NodeJS.ArrayBufferView} data - A data to write
  * @param {object} [options] - See {@link https://nodejs.org/api/fs.html#fs_fs_writefilesync_file_data_options|Node.js fs.writeFileSync}
  * @returns {string} - A temporary file path
  * @example
 const { writeTmpFileSync } = require('@tuckn/fs-hospitality');
- 
+
 const tmpStr = 'The Temporary Message';
 const tmpPath = writeTmpFileSync(tmpStr);
 // Returns: 'C:\Users\YourName\AppData\Local\Temp\7c70ceef-28f6-4ae8-b4ef-5e5d459ef007'
- 
+
 const fs = require('fs');
 const readData = fs.readFileSync(tmpPath, { encoding: 'utf8' });
 console.log(tmpStr === readData); // true
  */
 export function writeTmpFileSync(
-  data: Buffer | string | ArrayBuffer,
+  data: string | NodeJS.ArrayBufferView,
   options = {},
 ): string {
   const tmpPath = makeTmpPath();
@@ -365,16 +365,16 @@ function _trimAllLinesReplacer(matched: string): string {
  * @returns {string} - A trimmed string
  * @example
 const { trimAllLines } = require('@tuckn/fs-hospitality');
- 
+
 const str = '  foo  \n'
   + '  bar  \n'
   + ' baz  ';
- 
+
 const trimmedStr1 = trimAllLines(str);
 // Returns: 'foo\n'
 //   + 'bar\n'
 //   + 'baz';
- 
+
 const trimmedStr2 = trimAllLines(str, 'end');
 // Returns: '  foo\n'
 //   + '  bar\n'
@@ -517,7 +517,7 @@ const options = {
   bom: true,
   encoding: 'UTF-8',
 };
- 
+
 writeAsTextSync(vbsFile, strData, options);
 console.log('Writing successful');
  */
@@ -556,7 +556,7 @@ export function writeAsTextSync(
  * @returns {Promise<string>} - Returns mklink stdout
  * @example
 const { mklink } = require('@tuckn/fs-hospitality');
- 
+
 // on Windows, use mklink of command in Command-Prompt and requires admin rights
 mklink('D:\\MySrc\\TestDir', 'C:\\Test').then((stdout) => {
   console.log(stdout);
@@ -626,7 +626,7 @@ export async function mklink(
  * @returns {string} - Returns mklink stdout
  * @example
 const { mklinkSync } = require('@tuckn/fs-hospitality');
- 
+
 // on Windows, use mklink of command in Command-Prompt and requires admin rights
 const stdout = mklinkSync('D:\\MySrc\\TestDir', 'C:\\Test');
 // Created the symbolic link on "C:\"
@@ -741,7 +741,7 @@ function sortFileInfo(a: FileInfo, b: FileInfo): 0 | 1 | -1 {
  * @returns {Promise<string[]|FileInfo[]>} - { resolve:string, reject:Error }
  * @example
 const { readdirRecursively } = require('@tuckn/fs-hospitality');
- 
+
 // D:\Test\
 // │  FILE_ROOT1.TXT
 // │  fileRoot2-Symlink.log
@@ -756,7 +756,7 @@ const { readdirRecursively } = require('@tuckn/fs-hospitality');
 // │
 // ├─DirFoo
 // └─DirFoo-Symlink
- 
+
 readdirRecursively('D:\\Test').then((files) => {
   console.dir(files);
   // Returns [
@@ -770,7 +770,7 @@ readdirRecursively('D:\\Test').then((files) => {
   //   'DirBar\\DirQuux',
   //   'DirBar\\DirQuux\\fileQuux1-Symlink.txt',
   //   'DirBar\\DirQuux\\fileQuux1.txt' ]
- 
+
 readdirRecursively('D:\\Test', { withFileTypes: true }).then((files) => {
   console.dir(files);
   // Returns [
@@ -981,7 +981,7 @@ export async function readdirRecursively(
  * @returns {string[]|FileInfo[]} -
  * @example
 const { readdirRecursivelySync } = require('@tuckn/fs-hospitality');
- 
+
 // D:\Test\
 // │  FILE_ROOT1.TXT
 // │  fileRoot2-Symlink.log
@@ -996,7 +996,7 @@ const { readdirRecursivelySync } = require('@tuckn/fs-hospitality');
 // │
 // ├─DirFoo
 // └─DirFoo-Symlink
- 
+
 const files = readdirRecursivelySync('D:\\Test');
 console.dir(files);
 // Returns [

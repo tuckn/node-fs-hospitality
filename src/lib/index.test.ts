@@ -116,7 +116,7 @@ describe('fs-hospitality', () => {
     });
   });
 
-  test('readAsText', async (done) => {
+  test('readAsText', async () => {
     const examples = [
       textSjisDos,
       textUtf16BeBomDos,
@@ -142,8 +142,6 @@ describe('fs-hospitality', () => {
 
     // Test throwing Errors
     await expect(fsh.readAsText('')).rejects.toThrow();
-
-    done();
   });
 
   test('readAsTextSync', () => {
@@ -394,7 +392,7 @@ describe('fs-hospitality', () => {
     /** @todo Binary Data */
   });
 
-  test('writeAsText', async (done) => {
+  test('writeAsText', async () => {
     argSets.forEach(async (o) => {
       const tmpPath = fsh.makeTmpPath('', 'test_', '.txt');
       await fsh.writeAsText(tmpPath, o.inputText, o.opt);
@@ -416,8 +414,6 @@ describe('fs-hospitality', () => {
 
     // Test throwing Errors
     await expect(fsh.writeAsText('')).rejects.toThrow();
-
-    done();
   });
 
   test('writeAsTextSync', () => {
@@ -444,7 +440,7 @@ describe('fs-hospitality', () => {
     expect(() => fsh.writeAsTextSync('')).toThrow();
   });
 
-  test('mklink', async (done) => {
+  test('mklink', async () => {
     const pathPairs = [
       { srcPath: dirAssets, destPath: fsh.makeTmpPath() },
       { srcPath: fileNonText, destPath: fsh.makeTmpPath() },
@@ -481,8 +477,6 @@ describe('fs-hospitality', () => {
         await expect(fsh.mklink(errVal, 'dummy-path')).rejects.toThrow();
       }),
     );
-
-    done();
   });
 
   test('mklinkSync', () => {
@@ -648,7 +642,7 @@ describe('fs-hospitality', () => {
     return expectingFileObjs;
   };
 
-  test('readdirRecursively', async (done) => {
+  test('readdirRecursively', async () => {
     const dirTest = fsh.makeTmpPath('', 'test-readdirRecursively_');
     const expectingFileObjs = createTestFiles(dirTest);
 
@@ -754,8 +748,6 @@ describe('fs-hospitality', () => {
     // });
 
     rimraf.sync(dirTest);
-
-    done();
   });
 
   test('readdirRecursivelySync', () => {

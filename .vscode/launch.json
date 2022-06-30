@@ -29,10 +29,25 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}",
+      "preLaunchTask": "tsc: build - tsconfig.json",
       "sourceMaps": true,
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "program": "${workspaceFolder}/dist/bin/index.js",
       "args": ["ls", "./assets"]
+    },
+    {
+      "name": "Release Script",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "npm: prepkg",
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/scripts/**/*.js"],
+      "program": "${workspaceFolder}/scripts/release.js",
+      "args": [
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }
